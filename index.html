@@ -376,6 +376,21 @@
         .single-input.hide {
             display: none;
         }
+        .condition-input-wrap {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .condition-input-wrap .condition-input {
+            padding-right: 24px;
+        }
+        .condition-input-suffix {
+            position: absolute;
+            right: 8px;
+            color: #909399;
+            font-size: 14px;
+            pointer-events: none;
+        }
         /* 提示文字 */
         .tip-text {
             font-size: 12px;
@@ -601,6 +616,22 @@
                     </div>
                 </div>
 
+                <!-- 素材数量（自定义时显示） -->
+                <div class="form-item" id="materialCountItem" style="display: none;">
+                    <label>
+                        <span class="required">*</span>素材数量
+                    </label>
+                    <div class="form-control">
+                        <div class="btn-group" id="materialCountType">
+                            <button type="button" class="btn-option active" data-type="unlimit">不限</button>
+                            <button type="button" class="btn-option" data-type="custom">自定义</button>
+                        </div>
+                        <div class="input-group" id="materialCountInput" style="display: none;">
+                            <input type="number" class="input-text" id="materialCount" min="1" placeholder="请输入">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 素材投放时间 -->
                 <div class="form-item" id="statRangeItem">
                     <label>素材投放时间</label>
@@ -636,12 +667,21 @@
                                     <option value="between">介于</option>
                                 </select>
                                 <div class="single-input">
-                                    <input type="text" class="condition-input" placeholder="请输入">
+                                    <div class="condition-input-wrap">
+                                        <input type="text" class="condition-input" placeholder="请输入">
+                                        <span class="condition-input-suffix" style="display:none;">%</span>
+                                    </div>
                                 </div>
                                 <div class="between-input-group">
-                                    <input type="text" class="condition-input" placeholder="请输入">
+                                    <div class="condition-input-wrap">
+                                        <input type="text" class="condition-input" placeholder="请输入">
+                                        <span class="condition-input-suffix" style="display:none;">%</span>
+                                    </div>
                                     <span>至</span>
-                                    <input type="text" class="condition-input" placeholder="请输入">
+                                    <div class="condition-input-wrap">
+                                        <input type="text" class="condition-input" placeholder="请输入">
+                                        <span class="condition-input-suffix" style="display:none;">%</span>
+                                    </div>
                                 </div>
                                 <!-- 素材筛选删除按钮 正常显示 -->
                                 <button type="button" class="condition-delete">&times;</button>
@@ -803,14 +843,25 @@
             });
         });
 
-        const statRangeItem = document.getElementById('statRangeItem');
+const statRangeItem = document.getElementById('statRangeItem');
         const materialConditionItem = document.getElementById('materialConditionItem');
         const sortMetricItem = document.getElementById('sortMetricItem');
+        const materialCountItem = document.getElementById('materialCountItem');
+        const materialCountBtns = document.querySelectorAll('#materialCountType .btn-option');
+        const materialCountInput = document.getElementById('materialCountInput');
+        materialCountBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                materialCountBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                materialCountInput.style.display = btn.dataset.type === 'custom' ? 'flex' : 'none';
+            });
+        });
         materialFilterTypeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 materialFilterTypeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
+
+        const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
         sortMetricBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 sortMetricBtns.forEach(b => b.classList.remove('active'));
@@ -828,6 +879,7 @@ const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
             statRangeItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
             materialConditionItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
             sortMetricItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
+            materialCountItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
         }
 
         const statRangeBtns = document.querySelectorAll('#statRangeBtns .btn-option');
@@ -837,6 +889,12 @@ const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
                 btn.classList.add('active');
             });
         });
+
+        const togglePercentSuffix = (row) => {
+            const metric = row.querySelector('.material-condition-metric').value;
+            const showPercent = metric === 'doroi' || metric === 'compliance';
+            row.querySelectorAll('.condition-input-suffix').forEach(s => s.style.display = showPercent ? 'inline' : 'none');
+        };
 
         const bindOperatorChange = (row) => {
             const operator = row.querySelector('.material-condition-operator');
@@ -872,17 +930,33 @@ const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
                     <option value=">=">>=</option><option value=">">></option><option value="=">=</option>
                     <option value="<"><</option><option value="<="><=</option><option value="between">介于</option>
                 </select>
-                <div class="single-input"><input type="text" class="condition-input" placeholder="请输入"></div>
+                <div class="single-input">
+                    <div class="condition-input-wrap">
+                        <input type="text" class="condition-input" placeholder="请输入">
+                        <span class="condition-input-suffix" style="display:none;">%</span>
+                    </div>
+                </div>
                 <div class="between-input-group">
-                    <input type="text" class="condition-input" placeholder="请输入"><span>至</span>
-                    <input type="text" class="condition-input" placeholder="请输入">
+                    <div class="condition-input-wrap">
+                        <input type="text" class="condition-input" placeholder="请输入">
+                        <span class="condition-input-suffix" style="display:none;">%</span>
+                    </div>
+                    <span>至</span>
+                    <div class="condition-input-wrap">
+                        <input type="text" class="condition-input" placeholder="请输入">
+                        <span class="condition-input-suffix" style="display:none;">%</span>
+                    </div>
                 </div>
                 <button type="button" class="condition-delete">&times;</button>
             `;
             materialConditionGroup.appendChild(newRow);
             newRow.querySelector('.condition-delete').addEventListener('click', () => newRow.remove());
             bindOperatorChange(newRow);
-            newRow.querySelector('.material-condition-metric').addEventListener('change', checkMaterialConditionDuplicate);
+            newRow.querySelector('.material-condition-metric').addEventListener('change', function() {
+                checkMaterialConditionDuplicate();
+                togglePercentSuffix(newRow);
+            });
+            togglePercentSuffix(newRow);
             checkMaterialConditionDuplicate();
         });
 
@@ -896,7 +970,11 @@ const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
 
         document.querySelectorAll('#materialConditionGroup .condition-row').forEach(row => {
             bindOperatorChange(row);
-            row.querySelector('.material-condition-metric').addEventListener('change', checkMaterialConditionDuplicate);
+            row.querySelector('.material-condition-metric').addEventListener('change', function() {
+                checkMaterialConditionDuplicate();
+                togglePercentSuffix(row);
+            });
+            togglePercentSuffix(row);
         });
         // 只绑定素材区域的删除按钮，不绑定结束条件
         document.querySelectorAll('#materialConditionGroup .condition-delete').forEach(btn => {
@@ -944,6 +1022,8 @@ const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
                     filterType: document.querySelector('#materialFilterType .btn-option.active').dataset.type,
                     statRange: document.querySelector('#statRangeBtns .btn-option.active').dataset.day,
                     sortMetric: document.querySelector('#sortMetricBtns .btn-option.active').dataset.metric,
+                    materialCount: document.querySelector('#materialCountType .btn-option.active').dataset.type === 'custom'
+                        ? document.getElementById('materialCount').value : 'unlimit',
                     conditions: Array.from(document.querySelectorAll('#materialConditionGroup .condition-row')).map(row => {
                         const m = row.querySelector('.material-condition-metric').value;
                         const o = row.querySelector('.material-condition-operator').value;
