@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建Meta自动化任务</title>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        /* 模态框遮罩 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        /* 模态框内容 */
+        .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            width: 900px;
+            max-width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            position: relative;
+        }
+        /* 关闭按钮 */
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        /* 标题 */
+        .modal-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 32px;
+        }
+        /* 表单分组标题 */
+        .form-group-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            margin: 32px 0 24px 0;
+            padding-left: 8px;
+            border-left: 4px solid #4080ff;
+        }
+        /* 表单项 */
+        .form-item {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .form-item label {
+            width: 140px;
+            text-align: right;
+            padding-right: 12px;
+            line-height: 32px;
+            font-size: 14px;
+            color: #333;
+            flex-shrink: 0;
+        }
+        .form-item .required {
+            color: #ff4d4f;
+            margin-right: 4px;
+        }
+        .form-item .form-control {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        /* 输入框样式 */
+        .input-text {
+            height: 32px;
+            padding: 4px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-text:focus {
+            border-color: #4080ff;
+        }
+        /* 字符计数 */
+        .char-count {
+            font-size: 12px;
+            color: #909399;
+            margin-top: 4px;
+            text-align: right;
+        }
+        /* 状态/选项按钮组（互斥） */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-option {
+            height: 32px;
+            padding: 0 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #fff;
+            color: #606266;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-option.active {
+            background-color: #4080ff;
+            border-color: #4080ff;
+            color: #fff;
+        }
+        .btn-option:hover:not(.active) {
+            border-color: #4080ff;
+            color: #4080ff;
+        }
+        /* 时间/数字输入组 */
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .input-group span {
+            color: #606266;
+            font-size: 14px;
+            line-height: 32px;
+        }
+        .input-group .input-text {
+            width: 100px;
+        }
+        /* 时间选择组 */
+        .time-range-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .time-input {
+            height: 32px;
+            padding: 4px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            width: 120px;
+        }
+        .time-input:focus {
+            border-color: #4080ff;
+        }
+        .time-range-group span {
+            color: #606266;
+            font-size: 14px;
+        }
+        .add-time-btn {
+            color: #4080ff;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 4px;
+            align-self: flex-start;
+        }
+        .add-time-btn:hover {
+            color: #66a1ff;
+        }
+        /* 执行频率 */
+        .frequency-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .frequency-group .input-text {
+            width: 160px;
+        }
+        .frequency-group span {
+            color: #606266;
+            font-size: 14px;
+            line-height: 32px;
+        }
+        /* 选择短剧 - 多选标签 */
+        .drama-select-container {
+            position: relative;
+            width: 100%;
+        }
+        .drama-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 4px 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            min-height: 32px;
+            align-items: center;
+            cursor: pointer;
+        }
+        .drama-tag {
+            background-color: #f5f7fa;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 14px;
+            color: #606266;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .tag-close {
+            font-size: 14px;
+            color: #909399;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .tag-close:hover {
+            color: #606266;
+        }
+        .drama-dropdown-arrow {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #909399;
+            cursor: pointer;
+        }
+        .drama-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .drama-dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #606266;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .dropdown-item:hover {
+            background-color: #f5f7fa;
+        }
+        /* 结束运行条件 */
+        .condition-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+        .condition-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .condition-select {
+            height: 32px;
+            padding: 4px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            background-color: #fff;
+            min-width: 140px;
+        }
+        .condition-operator {
+            height: 32px;
+            padding: 4px 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            background-color: #fff;
+            width: 60px;
+            text-align: center;
+        }
+        .condition-input {
+            height: 32px;
+            padding: 4px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            flex: 1;
+            max-width: 200px;
+        }
+        .condition-input:focus {
+            border-color: #4080ff;
+        }
+        .condition-delete {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            color: #ff4d4f;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        /* 素材配置-统计范围 */
+        .stat-range-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stat-range-select {
+            height: 32px;
+            padding: 4px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            background-color: #fff;
+            min-width: 100px;
+        }
+        .stat-range-input {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .stat-range-input.show {
+            display: flex;
+        }
+        /* 介于操作符双输入 */
+        .between-input-group {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .between-input-group.show {
+            display: flex;
+        }
+        .single-input {
+            display: flex;
+        }
+        .single-input.hide {
+            display: none;
+        }
+        /* 提示文字 */
+        .tip-text {
+            font-size: 12px;
+            color: #909399;
+            line-height: 32px;
+            margin-left: 8px;
+        }
+        /* 底部操作按钮 */
+        .form-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        .btn-cancel {
+            height: 32px;
+            padding: 0 16px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #fff;
+            color: #606266;
+        }
+        .btn-cancel:hover {
+            border-color: #4080ff;
+            color: #4080ff;
+        }
+        .btn-submit {
+            height: 32px;
+            padding: 0 16px;
+            border: 1px solid #4080ff;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #4080ff;
+            color: #fff;
+        }
+        .btn-submit:hover {
+            background-color: #66a1ff;
+            border-color: #66a1ff;
+        }
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #c1c12px;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-close" id="modalClose">&times;</div>
+            <div class="modal-title">新建Meta自动化任务</div>
+
+            <form id="autoTaskForm">
+                <!-- 基本信息分组 -->
+                <div class="form-group-title">基本信息</div>
+
+                <!-- 任务名称 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>任务名称
+                    </label>
+                    <div class="form-control">
+                        <input type="text" class="input-text" id="taskName" maxlength="50" placeholder="请输入任务名称">
+                        <div class="char-count" id="taskNameCount">0 / 50</div>
+                    </div>
+                </div>
+
+                <!-- 状态 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>状态
+                    </label>
+                    <div class="form-control">
+                        <div class="btn-group">
+                            <button type="button" class="btn-option active" data-status="1">启用</button>
+                            <button type="button" class="btn-option" data-status="0">停用</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 生效时间 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>生效时间(UTC+8)
+                    </label>
+                    <div class="form-control" id="timeRangeContainer">
+                        <div class="time-range-group">
+                            <input type="time" class="time-input" value="00:00:00" step="1">
+                            <span>~</span>
+                            <input type="time" class="time-input" value="23:59:59" step="1">
+                        </div>
+                        <div class="add-time-btn" id="addTimeRange">+ 添加时间范围</div>
+                    </div>
+                </div>
+
+                <!-- 执行频率 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>执行频率
+                    </label>
+                    <div class="form-control">
+                        <div class="frequency-group">
+                            <span>间隔</span>
+                            <input type="number" class="input-text" id="executeFrequency" min="1" placeholder="请输入">
+                            <span>分钟执行一次</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 选择短剧 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>选择短剧
+                    </label>
+                    <div class="form-control">
+                        <div class="drama-select-container">
+                            <div class="drama-tags" id="dramaTags">
+                                <div class="drama-tag">
+                                    枫叶互动
+                                    <span class="tag-close" data-tag="枫叶互动">&times;</span>
+                                </div>
+                                <div class="drama-tag">
+                                    蔚元星宸
+                                    <span class="tag-close" data-tag="蔚元星宸">&times;</span>
+                                </div>
+                                <span class="drama-dropdown-arrow" id="dramaDropdownArrow">&#9662;</span>
+                            </div>
+                            <div class="drama-dropdown-menu" id="dramaDropdownMenu">
+                                <div class="dropdown-item">{短剧名称}{短剧编号}</div>
+                                <div class="dropdown-item">短剧A{1001}</div>
+                                <div class="dropdown-item">短剧B{1002}</div>
+                                <div class="dropdown-item">短剧C{1003}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 结束运行条件 - 固定不可修改 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>结束运行条件
+                    </label>
+                    <div class="form-control">
+                        <div class="condition-group" id="endConditionGroup">
+                            <div class="condition-row">
+                                <select class="condition-select" disabled>
+                                    <option value="series_count">单账户在投总系列数</option>
+                                </select>
+                                <select class="condition-operator" disabled>
+                                    <option value=">=">>=</option>
+                                </select>
+                                <input type="number" class="condition-input" placeholder="请输入数值" min="0">
+                                <!-- 结束条件删除按钮隐藏 -->
+                                <button type="button" class="condition-delete" style="display:none;">&times;</button>
+                            </div>
+                            <div class="condition-row">
+                                <select class="condition-select" disabled>
+                                    <option value="account_count">账户数</option>
+                                </select>
+                                <select class="condition-operator" disabled>
+                                    <option value=">=">>=</option>
+                                </select>
+                                <input type="number" class="condition-input" placeholder="请输入数值" min="0">
+                                <!-- 结束条件删除按钮隐藏 -->
+                                <button type="button" class="condition-delete" style="display:none;">&times;</button>
+                            </div>
+                        </div>
+                        <!-- 隐藏添加条件按钮 -->
+                        <div class="add-time-btn" id="addEndCondition" style="display: none;">+ 添加条件</div>
+                    </div>
+                </div>
+
+                <!-- ==================== 素材配置模块 ==================== -->
+                <div class="form-group-title">素材配置</div>
+
+                <!-- 素材选择方式 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>素材选择方式
+                    </label>
+                    <div class="form-control">
+                        <div class="btn-group" id="materialSelectType">
+                            <button type="button" class="btn-option active" data-type="time">按时间</button>
+                            <button type="button" class="btn-option" data-type="sort">按排序</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 动态时间标题：创建时间 / 投放时间 -->
+                <div class="form-item" id="materialTimeItem">
+                    <label id="materialTimeLabel">
+                        <span class="required">*</span>素材创建时间
+                    </label>
+                    <div class="form-control">
+                        <div class="btn-group" id="materialCreateTime">
+                            <button type="button" class="btn-option active" data-day="1">1天</button>
+                            <button type="button" class="btn-option" data-day="3">3天</button>
+                            <button type="button" class="btn-option" data-day="7">7天</button>
+                            <button type="button" class="btn-option" data-day="15">15天</button>
+                            <button type="button" class="btn-option" data-day="30">30天</button>
+                            <button type="button" class="btn-option" data-day="custom">自定义</button>
+                        </div>
+                        <div class="input-group" id="customDayInput" style="display: none;">
+                            <input type="number" class="input-text" id="customDay" min="1" placeholder="请输入天数">
+                            <span>天</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 素材数据筛选 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>素材数据筛选
+                    </label>
+                    <div class="form-control">
+                        <div class="btn-group" id="materialFilterType">
+                            <button type="button" class="btn-option active" data-type="unlimit">不限</button>
+                            <button type="button" class="btn-option" data-type="custom">自定义</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 统计时间范围 -->
+                <div class="form-item" id="statRangeItem">
+                    <label>统计时间范围</label>
+                    <div class="form-control">
+                        <div class="stat-range-group">
+                            <select class="stat-range-select" id="statRange">
+                                <option value="total">累计</option>
+                                <option value="recent">近</option>
+                            </select>
+                            <div class="stat-range-input" id="recentDayInput">
+                                <input type="number" class="input-text" id="recentDay" min="1" placeholder="请输入">
+                                <span>天</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 筛选条件列表 -->
+                <div class="form-item" id="materialConditionItem">
+                    <label>筛选条件</label>
+                    <div class="form-control">
+                        <div class="condition-group" id="materialConditionGroup">
+                            <div class="condition-row">
+                                <select class="condition-select material-condition-metric">
+                                    <option value="cost">消耗</option>
+                                    <option value="doroi">DOROI</option>
+                                    <option value="compliance">综合达标率</option>
+                                </select>
+                                <select class="condition-operator material-condition-operator">
+                                    <option value=">=">>=</option>
+                                    <option value=">">></option>
+                                    <option value="=">=</option>
+                                    <option value="<"><</option>
+                                    <option value="<="><=</option>
+                                    <option value="between">介于</option>
+                                </select>
+                                <div class="single-input">
+                                    <input type="text" class="condition-input" placeholder="请输入">
+                                </div>
+                                <div class="between-input-group">
+                                    <input type="text" class="condition-input" placeholder="请输入">
+                                    <span>至</span>
+                                    <input type="text" class="condition-input" placeholder="请输入">
+                                </div>
+                                <!-- 素材筛选删除按钮 正常显示 -->
+                                <button type="button" class="condition-delete">&times;</button>
+                            </div>
+                        </div>
+                        <div class="add-time-btn" id="addMaterialCondition">+ 添加条件</div>
+                        <div class="error-tip" id="materialConditionError">不能重复选择相同条件类型</div>
+                        <div class="error-tip" id="materialConditionRequired">选择自定义时，至少需要输入一个条件</div>
+                    </div>
+                </div>
+
+                <!-- 排序方式（按排序时显示）支持多选 -->
+                <div class="form-item" id="sortWayItem" style="display: none;">
+                    <label>
+                        <span class="required">*</span>排序方式
+                    </label>
+                    <div class="form-control">
+                        <div class="btn-group" id="sortWay">
+                            <button type="button" class="btn-option" data-sort="cost">按消耗</button>
+                            <button type="button" class="btn-option" data-sort="conversion">按转化</button>
+                            <button type="button" class="btn-option" data-sort="doroi">按DOROI</button>
+                            <button type="button" class="btn-option" data-sort="compliance">按达标率</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 素材重复次数 -->
+                <div class="form-item">
+                    <label>素材重复次数</label>
+                    <div class="form-control">
+                        <div class="btn-group" id="repeatCountType">
+                            <button type="button" class="btn-option active" data-type="unlimit">不限</button>
+                            <button type="button" class="btn-option" data-type="custom">自定义</button>
+                        </div>
+                        <div class="input-group" id="repeatCountInput" style="display: none;">
+                            <input type="number" class="input-text" id="repeatCount" min="1" placeholder="请输入">
+                            <span class="tip-text">不填写默认30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 广告数 -->
+                <div class="form-item">
+                    <label>广告数</label>
+                    <div class="form-control">
+                        <div class="input-group">
+                            <input type="number" class="input-text" id="adCount" min="1" placeholder="请输入">
+                            <span class="tip-text">不填写默认30</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- ==================== 素材配置模块 结束 ==================== -->
+
+                <!-- 底部操作按钮 -->
+                <div class="form-footer">
+                    <button type="button" class="btn-cancel" id="btnCancel">取消</button>
+                    <button type="submit" class="btn-submit">确定</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 基础功能逻辑 ====================
+        const modalClose = document.getElementById('modalClose');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const btnCancel = document.getElementById('btnCancel');
+        
+        const closeModal = () => {
+            modalOverlay.style.display = 'none';
+        };
+        modalClose.addEventListener('click', closeModal);
+        btnCancel.addEventListener('click', closeModal);
+
+        // 任务名称计数
+        const taskNameInput = document.getElementById('taskName');
+        const taskNameCount = document.getElementById('taskNameCount');
+        taskNameInput.addEventListener('input', () => {
+            const len = taskNameInput.value.length;
+            taskNameCount.textContent = `${len} / 50`;
+        });
+
+        // 状态切换
+        const statusBtns = document.querySelectorAll('.btn-option[data-status]');
+        statusBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                statusBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // 添加时间范围
+        const addTimeRangeBtn = document.getElementById('addTimeRange');
+        const timeRangeContainer = document.getElementById('timeRangeContainer');
+        addTimeRangeBtn.addEventListener('click', () => {
+            const newTimeRow = document.createElement('div');
+            newTimeRow.className = 'time-range-group';
+            newTimeRow.innerHTML = `
+                <input type="time" class="time-input" value="00:00:00" step="1">
+                <span>~</span>
+                <input type="time" class="time-input" value="23:59:59" step="1">
+                <span class="tag-close" style="cursor: pointer; color: #909399;">&times;</span>
+            `;
+            timeRangeContainer.insertBefore(newTimeRow, addTimeRangeBtn);
+            const closeBtn = newTimeRow.querySelector('.tag-close');
+            closeBtn.addEventListener('click', () => {
+                timeRangeContainer.removeChild(newTimeRow);
+            });
+        });
+
+        // 选择短剧
+        const dramaTags = document.getElementById('dramaTags');
+        const dramaDropdownArrow = document.getElementById('dramaDropdownArrow');
+        const dramaDropdownMenu = document.getElementById('dramaDropdownMenu');
+        const tagCloseBtns = document.querySelectorAll('.tag-close');
+
+        dramaTags.addEventListener('click', (e) => {
+            if (e.target === dramaDropdownArrow || e.target === dramaTags) {
+                dramaDropdownMenu.classList.toggle('show');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!dramaTags.contains(e.target) && !dramaDropdownMenu.contains(e.target)) {
+                dramaDropdownMenu.classList.remove('show');
+            }
+        });
+
+        dramaDropdownMenu.addEventListener('click', (e) => {
+            if (e.target.classList.contains('dropdown-item')) {
+                const text = e.target.textContent;
+                const existingTags = Array.from(document.querySelectorAll('.drama-tag')).map(tag => tag.textContent.trim().replace('×', ''));
+                if (!existingTags.includes(text)) {
+                    const newTag = document.createElement('div');
+                    newTag.className = 'drama-tag';
+                    newTag.innerHTML = `${text}<span class="tag-close" data-tag="${text}">&times;</span>`;
+                    dramaTags.insertBefore(newTag, dramaDropdownArrow);
+                    newTag.querySelector('.tag-close').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dramaTags.removeChild(newTag);
+                    });
+                }
+                dramaDropdownMenu.classList.remove('show');
+            }
+        });
+
+        tagCloseBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dramaTags.removeChild(btn.parentElement);
+            });
+        });
+
+        // ==================== 素材配置交互 ====================
+        const selectTypeBtns = document.querySelectorAll('#materialSelectType .btn-option');
+        const sortWayItem = document.getElementById('sortWayItem');
+        const materialFilterTypeBtns = document.querySelectorAll('#materialFilterType .btn-option');
+        const materialTimeLabel = document.getElementById('materialTimeLabel');
+        
+        selectTypeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectTypeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // 切换标题：素材创建时间 ↔ 素材投放时间
+                if (btn.dataset.type === 'sort') {
+                    materialTimeLabel.innerHTML = '<span class="required">*</span>素材投放时间';
+                    sortWayItem.style.display = 'flex';
+                    materialFilterTypeBtns.forEach(b => {
+                        b.dataset.type === 'custom' ? b.classList.add('active') : b.classList.remove('active');
+                    });
+                } else {
+                    materialTimeLabel.innerHTML = '<span class="required">*</span>素材创建时间';
+                    sortWayItem.style.display = 'none';
+                }
+                checkMaterialFilterVisible();
+                checkMaterialConditionRequired();
+            });
+        });
+
+        const createTimeBtns = document.querySelectorAll('#materialCreateTime .btn-option');
+        const customDayInput = document.getElementById('customDayInput');
+        createTimeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                createTimeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                customDayInput.style.display = btn.dataset.day === 'custom' ? 'flex' : 'none';
+            });
+        });
+
+        const statRangeItem = document.getElementById('statRangeItem');
+        const materialConditionItem = document.getElementById('materialConditionItem');
+        materialFilterTypeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                materialFilterTypeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                checkMaterialFilterVisible();
+                checkMaterialConditionRequired();
+            });
+        });
+
+        function checkMaterialFilterVisible() {
+            const filterType = document.querySelector('#materialFilterType .btn-option.active').dataset.type;
+            statRangeItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
+            materialConditionItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
+        }
+
+        const statRangeSelect = document.getElementById('statRange');
+        const recentDayInput = document.getElementById('recentDayInput');
+        statRangeSelect.addEventListener('change', () => {
+            recentDayInput.classList.toggle('show', statRangeSelect.value === 'recent');
+        });
+
+        const bindOperatorChange = (row) => {
+            const operator = row.querySelector('.material-condition-operator');
+            const singleInput = row.querySelector('.single-input');
+            const betweenInput = row.querySelector('.between-input-group');
+            operator.addEventListener('change', () => {
+                const isBetween = operator.value === 'between';
+                singleInput.classList.toggle('hide', isBetween);
+                betweenInput.classList.toggle('show', isBetween);
+                checkMaterialConditionDuplicate();
+            });
+        };
+
+        const checkMaterialConditionDuplicate = () => {
+            const metrics = Array.from(document.querySelectorAll('.material-condition-metric')).map(m => m.value);
+            const hasDuplicate = new Set(metrics).size !== metrics.length;
+            document.getElementById('materialConditionError').classList.toggle('show', hasDuplicate);
+            return !hasDuplicate;
+        };
+
+        const addMaterialConditionBtn = document.getElementById('addMaterialCondition');
+        const materialConditionGroup = document.getElementById('materialConditionGroup');
+        addMaterialConditionBtn.addEventListener('click', () => {
+            const newRow = document.createElement('div');
+            newRow.className = 'condition-row';
+            newRow.innerHTML = `
+                <select class="condition-select material-condition-metric">
+                    <option value="cost">消耗</option>
+                    <option value="doroi">DOROI</option>
+                    <option value="compliance">综合达标率</option>
+                </select>
+                <select class="condition-operator material-condition-operator">
+                    <option value=">=">>=</option><option value=">">></option><option value="=">=</option>
+                    <option value="<"><</option><option value="<="><=</option><option value="between">介于</option>
+                </select>
+                <div class="single-input"><input type="text" class="condition-input" placeholder="请输入"></div>
+                <div class="between-input-group">
+                    <input type="text" class="condition-input" placeholder="请输入"><span>至</span>
+                    <input type="text" class="condition-input" placeholder="请输入">
+                </div>
+                <button type="button" class="condition-delete">&times;</button>
+            `;
+            materialConditionGroup.appendChild(newRow);
+            newRow.querySelector('.condition-delete').addEventListener('click', () => newRow.remove());
+            bindOperatorChange(newRow);
+            newRow.querySelector('.material-condition-metric').addEventListener('change', checkMaterialConditionDuplicate);
+            checkMaterialConditionDuplicate();
+        });
+
+        const checkMaterialConditionRequired = () => {
+            const filterType = document.querySelector('#materialFilterType .btn-option.active').dataset.type;
+            const selectType = document.querySelector('#materialSelectType .btn-option.active').dataset.type;
+            const needCheck = filterType === 'custom' || selectType === 'sort';
+            let valid = true;
+            if (needCheck) {
+                valid = false;
+                document.querySelectorAll('#materialConditionGroup .condition-row').forEach(row => {
+                    const m = row.querySelector('.material-condition-metric').value;
+                    const o = row.querySelector('.material-condition-operator').value;
+                    const i = row.querySelectorAll('.condition-input');
+                    if (m && o) {
+                        if (o === 'between' && i[0].value && i[1].value) valid = true;
+                        else if (o !== 'between' && i[0].value) valid = true;
+                    }
+                });
+            }
+            document.getElementById('materialConditionRequired').classList.toggle('show', needCheck && !valid);
+            return !needCheck || valid;
+        };
+
+        document.querySelectorAll('#materialConditionGroup .condition-row').forEach(row => {
+            bindOperatorChange(row);
+            row.querySelector('.material-condition-metric').addEventListener('change', checkMaterialConditionDuplicate);
+        });
+        // 只绑定素材区域的删除按钮，不绑定结束条件
+        document.querySelectorAll('#materialConditionGroup .condition-delete').forEach(btn => {
+            btn.addEventListener('click', () => btn.parentElement.remove());
+        });
+
+        const repeatCountBtns = document.querySelectorAll('#repeatCountType .btn-option');
+        const repeatCountInput = document.getElementById('repeatCountInput');
+        repeatCountBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                repeatCountBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                repeatCountInput.style.display = btn.dataset.type === 'custom' ? 'flex' : 'none';
+            });
+        });
+
+        // 排序方式 —— 支持多选
+        const sortWayBtns = document.querySelectorAll('#sortWay .btn-option');
+        sortWayBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+            });
+        });
+
+        checkMaterialFilterVisible();
+
+        // ==================== 表单提交 ====================
+        const autoTaskForm = document.getElementById('autoTaskForm');
+        autoTaskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (!checkMaterialConditionDuplicate()) {
+                alert('不能重复选择相同条件类型');
+                return;
+            }
+            if (!checkMaterialConditionRequired()) {
+                alert('选择自定义时，至少需要输入一个条件');
+                return;
+            }
+
+            // 获取多选的排序方式
+            const sortWays = Array.from(
+                document.querySelectorAll('#sortWay .btn-option.active')
+            ).map(item => item.dataset.sort);
+
+            const formData = {
+                taskName: taskNameInput.value,
+                status: document.querySelector('.btn-option[data-status].active').dataset.status,
+                timeRanges: Array.from(timeRangeContainer.querySelectorAll('.time-range-group')).map(row => ({
+                    start: row.querySelectorAll('.time-input')[0].value,
+                    end: row.querySelectorAll('.time-input')[1].value
+                })),
+                executeFrequency: document.getElementById('executeFrequency').value,
+                dramas: Array.from(document.querySelectorAll('.drama-tag')).map(t => t.textContent.trim().replace('×', '')),
+                // 固定结束条件
+                endConditions: [
+                    { metric: 'series_count', name: '单账户在投总系列数', operator: '>=', value: document.querySelectorAll('#endConditionGroup .condition-input')[0].value },
+                    { metric: 'account_count', name: '账户数', operator: '>=', value: document.querySelectorAll('#endConditionGroup .condition-input')[1].value }
+                ],
+                material: {
+                    selectType: document.querySelector('#materialSelectType .btn-option.active').dataset.type,
+                    timeType: document.querySelector('#materialSelectType .btn-option.active').dataset.type === 'sort' 
+                        ? 'launch' 
+                        : 'create',
+                    createTime: document.querySelector('#materialCreateTime .btn-option.active').dataset.day === 'custom'
+                        ? document.getElementById('customDay').value
+                        : document.querySelector('#materialCreateTime .btn-option.active').dataset.day,
+                    filterType: document.querySelector('#materialFilterType .btn-option.active').dataset.type,
+                    statRange: statRangeSelect.value,
+                    recentDay: statRangeSelect.value === 'recent' ? document.getElementById('recentDay').value : '',
+                    conditions: Array.from(document.querySelectorAll('#materialConditionGroup .condition-row')).map(row => {
+                        const m = row.querySelector('.material-condition-metric').value;
+                        const o = row.querySelector('.material-condition-operator').value;
+                        const i = row.querySelectorAll('.condition-input');
+                        return o === 'between' ? { metric: m, operator: o, min: i[0].value, max: i[1].value }
+                                               : { metric: m, operator: o, value: i[0].value };
+                    }),
+                    sortWay: sortWays, // 数组，支持多选
+                    repeatCount: document.querySelector('#repeatCountType .btn-option.active').dataset.type === 'custom'
+                        ? document.getElementById('repeatCount').value || 30 : 'unlimit',
+                    adCount: document.getElementById('adCount').value || 30
+                }
+            };
+
+            if (!formData.taskName) { alert('请输入任务名称'); return; }
+            if (!formData.executeFrequency) { alert('请输入执行频率'); return; }
+            if (formData.dramas.length === 0) { alert('请选择短剧'); return; }
+            if (formData.material.selectType === 'sort' && formData.material.sortWay.length === 0) { 
+                alert('请至少选择一个排序方式'); 
+                return; 
+            }
+            if (formData.material.createTime === 'custom' && !formData.material.createTime) { alert('请输入自定义天数'); return; }
+            if (formData.material.statRange === 'recent' && !formData.material.recentDay) { alert('请输入近几天'); return; }
+            if (!formData.endConditions[0].value || !formData.endConditions[1].value) { alert('请填写结束运行条件的数值'); return; }
+
+            console.log('提交数据：', formData);
+            alert('任务创建成功！');
+            closeModal();
+        });
+    </script>
+</body>
+</html>
