@@ -606,7 +606,8 @@
                     <label>素材投放时间</label>
                     <div class="form-control">
                         <div class="btn-group" id="statRangeBtns">
-                            <button type="button" class="btn-option active" data-day="1">1天</button>
+                            <button type="button" class="btn-option active" data-day="unlimit">累计</button>
+                            <button type="button" class="btn-option" data-day="1">1天</button>
                             <button type="button" class="btn-option" data-day="3">3天</button>
                             <button type="button" class="btn-option" data-day="7">7天</button>
                             <button type="button" class="btn-option" data-day="15">15天</button>
@@ -888,21 +889,9 @@ const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
         const checkMaterialConditionRequired = () => {
             const filterType = document.querySelector('#materialFilterType .btn-option.active').dataset.type;
             const needCheck = filterType === 'custom';
-            let valid = true;
-            if (needCheck) {
-                valid = false;
-                document.querySelectorAll('#materialConditionGroup .condition-row').forEach(row => {
-                    const m = row.querySelector('.material-condition-metric').value;
-                    const o = row.querySelector('.material-condition-operator').value;
-                    const i = row.querySelectorAll('.condition-input');
-                    if (m && o) {
-                        if (o === 'between' && i[0].value && i[1].value) valid = true;
-                        else if (o !== 'between' && i[0].value) valid = true;
-                    }
-                });
-            }
-            document.getElementById('materialConditionRequired').classList.toggle('show', needCheck && !valid);
-            return !needCheck || valid;
+            const hasRows = document.querySelectorAll('#materialConditionGroup .condition-row').length > 0;
+            document.getElementById('materialConditionRequired').classList.toggle('show', needCheck && !hasRows);
+            return !needCheck || hasRows;
         };
 
         document.querySelectorAll('#materialConditionGroup .condition-row').forEach(row => {
