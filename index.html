@@ -383,6 +383,15 @@
             line-height: 32px;
             margin-left: 8px;
         }
+        .error-tip {
+            display: none;
+            font-size: 12px;
+            color: #ff4d4f;
+            margin-top: 4px;
+        }
+        .error-tip.show {
+            display: block;
+        }
         /* 底部操作按钮 */
         .form-footer {
             display: flex;
@@ -562,36 +571,19 @@
                 <!-- ==================== 素材配置模块 ==================== -->
                 <div class="form-group-title">素材配置</div>
 
-                <!-- 素材选择方式 -->
-                <div class="form-item">
-                    <label>
-                        <span class="required">*</span>素材选择方式
-                    </label>
-                    <div class="form-control">
-                        <div class="btn-group" id="materialSelectType">
-                            <button type="button" class="btn-option active" data-type="time">按时间</button>
-                            <button type="button" class="btn-option" data-type="sort">按排序</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 动态时间标题：创建时间 / 投放时间 -->
+                <!-- 素材创建时间 -->
                 <div class="form-item" id="materialTimeItem">
-                    <label id="materialTimeLabel">
+                    <label>
                         <span class="required">*</span>素材创建时间
                     </label>
                     <div class="form-control">
                         <div class="btn-group" id="materialCreateTime">
-                            <button type="button" class="btn-option active" data-day="1">1天</button>
+                            <button type="button" class="btn-option active" data-day="unlimit">不限</button>
+                            <button type="button" class="btn-option" data-day="1">1天</button>
                             <button type="button" class="btn-option" data-day="3">3天</button>
                             <button type="button" class="btn-option" data-day="7">7天</button>
                             <button type="button" class="btn-option" data-day="15">15天</button>
                             <button type="button" class="btn-option" data-day="30">30天</button>
-                            <button type="button" class="btn-option" data-day="custom">自定义</button>
-                        </div>
-                        <div class="input-group" id="customDayInput" style="display: none;">
-                            <input type="number" class="input-text" id="customDay" min="1" placeholder="请输入天数">
-                            <span>天</span>
                         </div>
                     </div>
                 </div>
@@ -609,19 +601,16 @@
                     </div>
                 </div>
 
-                <!-- 统计时间范围 -->
+                <!-- 素材投放时间 -->
                 <div class="form-item" id="statRangeItem">
-                    <label>统计时间范围</label>
+                    <label>素材投放时间</label>
                     <div class="form-control">
-                        <div class="stat-range-group">
-                            <select class="stat-range-select" id="statRange">
-                                <option value="total">累计</option>
-                                <option value="recent">近</option>
-                            </select>
-                            <div class="stat-range-input" id="recentDayInput">
-                                <input type="number" class="input-text" id="recentDay" min="1" placeholder="请输入">
-                                <span>天</span>
-                            </div>
+                        <div class="btn-group" id="statRangeBtns">
+                            <button type="button" class="btn-option active" data-day="1">1天</button>
+                            <button type="button" class="btn-option" data-day="3">3天</button>
+                            <button type="button" class="btn-option" data-day="7">7天</button>
+                            <button type="button" class="btn-option" data-day="15">15天</button>
+                            <button type="button" class="btn-option" data-day="30">30天</button>
                         </div>
                     </div>
                 </div>
@@ -663,17 +652,14 @@
                     </div>
                 </div>
 
-                <!-- 排序方式（按排序时显示）支持多选 -->
-                <div class="form-item" id="sortWayItem" style="display: none;">
-                    <label>
-                        <span class="required">*</span>排序方式
-                    </label>
+                <!-- 按指标排序（自定义时显示） -->
+                <div class="form-item" id="sortMetricItem" style="display: none;">
+                    <label>按指标排序</label>
                     <div class="form-control">
-                        <div class="btn-group" id="sortWay">
-                            <button type="button" class="btn-option" data-sort="cost">按消耗</button>
-                            <button type="button" class="btn-option" data-sort="conversion">按转化</button>
-                            <button type="button" class="btn-option" data-sort="doroi">按DOROI</button>
-                            <button type="button" class="btn-option" data-sort="compliance">按达标率</button>
+                        <div class="btn-group" id="sortMetricBtns">
+                            <button type="button" class="btn-option active" data-metric="compliance">综合达标率</button>
+                            <button type="button" class="btn-option" data-metric="cost">消耗</button>
+                            <button type="button" class="btn-option" data-metric="doroi">D0ROI</button>
                         </div>
                     </div>
                 </div>
@@ -806,49 +792,32 @@
         });
 
         // ==================== 素材配置交互 ====================
-        const selectTypeBtns = document.querySelectorAll('#materialSelectType .btn-option');
-        const sortWayItem = document.getElementById('sortWayItem');
         const materialFilterTypeBtns = document.querySelectorAll('#materialFilterType .btn-option');
-        const materialTimeLabel = document.getElementById('materialTimeLabel');
-        
-        selectTypeBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectTypeBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                // 切换标题：素材创建时间 ↔ 素材投放时间
-                if (btn.dataset.type === 'sort') {
-                    materialTimeLabel.innerHTML = '<span class="required">*</span>素材投放时间';
-                    sortWayItem.style.display = 'flex';
-                    materialFilterTypeBtns.forEach(b => {
-                        b.dataset.type === 'custom' ? b.classList.add('active') : b.classList.remove('active');
-                    });
-                } else {
-                    materialTimeLabel.innerHTML = '<span class="required">*</span>素材创建时间';
-                    sortWayItem.style.display = 'none';
-                }
-                checkMaterialFilterVisible();
-                checkMaterialConditionRequired();
-            });
-        });
 
         const createTimeBtns = document.querySelectorAll('#materialCreateTime .btn-option');
-        const customDayInput = document.getElementById('customDayInput');
         createTimeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 createTimeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                customDayInput.style.display = btn.dataset.day === 'custom' ? 'flex' : 'none';
             });
         });
 
         const statRangeItem = document.getElementById('statRangeItem');
         const materialConditionItem = document.getElementById('materialConditionItem');
+        const sortMetricItem = document.getElementById('sortMetricItem');
         materialFilterTypeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 materialFilterTypeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                checkMaterialFilterVisible();
+const sortMetricBtns = document.querySelectorAll('#sortMetricBtns .btn-option');
+        sortMetricBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                sortMetricBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        checkMaterialFilterVisible();
                 checkMaterialConditionRequired();
             });
         });
@@ -857,12 +826,15 @@
             const filterType = document.querySelector('#materialFilterType .btn-option.active').dataset.type;
             statRangeItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
             materialConditionItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
+            sortMetricItem.style.display = filterType === 'unlimit' ? 'none' : 'flex';
         }
 
-        const statRangeSelect = document.getElementById('statRange');
-        const recentDayInput = document.getElementById('recentDayInput');
-        statRangeSelect.addEventListener('change', () => {
-            recentDayInput.classList.toggle('show', statRangeSelect.value === 'recent');
+        const statRangeBtns = document.querySelectorAll('#statRangeBtns .btn-option');
+        statRangeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                statRangeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
         });
 
         const bindOperatorChange = (row) => {
@@ -915,8 +887,7 @@
 
         const checkMaterialConditionRequired = () => {
             const filterType = document.querySelector('#materialFilterType .btn-option.active').dataset.type;
-            const selectType = document.querySelector('#materialSelectType .btn-option.active').dataset.type;
-            const needCheck = filterType === 'custom' || selectType === 'sort';
+            const needCheck = filterType === 'custom';
             let valid = true;
             if (needCheck) {
                 valid = false;
@@ -953,14 +924,6 @@
             });
         });
 
-        // 排序方式 —— 支持多选
-        const sortWayBtns = document.querySelectorAll('#sortWay .btn-option');
-        sortWayBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
-            });
-        });
-
         checkMaterialFilterVisible();
 
         // ==================== 表单提交 ====================
@@ -968,19 +931,10 @@
         autoTaskForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            if (!checkMaterialConditionDuplicate()) {
-                alert('不能重复选择相同条件类型');
-                return;
-            }
             if (!checkMaterialConditionRequired()) {
                 alert('选择自定义时，至少需要输入一个条件');
                 return;
             }
-
-            // 获取多选的排序方式
-            const sortWays = Array.from(
-                document.querySelectorAll('#sortWay .btn-option.active')
-            ).map(item => item.dataset.sort);
 
             const formData = {
                 taskName: taskNameInput.value,
@@ -997,16 +951,10 @@
                     { metric: 'account_count', name: '账户数', operator: '>=', value: document.querySelectorAll('#endConditionGroup .condition-input')[1].value }
                 ],
                 material: {
-                    selectType: document.querySelector('#materialSelectType .btn-option.active').dataset.type,
-                    timeType: document.querySelector('#materialSelectType .btn-option.active').dataset.type === 'sort' 
-                        ? 'launch' 
-                        : 'create',
-                    createTime: document.querySelector('#materialCreateTime .btn-option.active').dataset.day === 'custom'
-                        ? document.getElementById('customDay').value
-                        : document.querySelector('#materialCreateTime .btn-option.active').dataset.day,
+                    createTime: document.querySelector('#materialCreateTime .btn-option.active').dataset.day,
                     filterType: document.querySelector('#materialFilterType .btn-option.active').dataset.type,
-                    statRange: statRangeSelect.value,
-                    recentDay: statRangeSelect.value === 'recent' ? document.getElementById('recentDay').value : '',
+                    statRange: document.querySelector('#statRangeBtns .btn-option.active').dataset.day,
+                    sortMetric: document.querySelector('#sortMetricBtns .btn-option.active').dataset.metric,
                     conditions: Array.from(document.querySelectorAll('#materialConditionGroup .condition-row')).map(row => {
                         const m = row.querySelector('.material-condition-metric').value;
                         const o = row.querySelector('.material-condition-operator').value;
@@ -1014,7 +962,6 @@
                         return o === 'between' ? { metric: m, operator: o, min: i[0].value, max: i[1].value }
                                                : { metric: m, operator: o, value: i[0].value };
                     }),
-                    sortWay: sortWays, // 数组，支持多选
                     repeatCount: document.querySelector('#repeatCountType .btn-option.active').dataset.type === 'custom'
                         ? document.getElementById('repeatCount').value || 30 : 'unlimit',
                     adCount: document.getElementById('adCount').value || 30
@@ -1024,12 +971,6 @@
             if (!formData.taskName) { alert('请输入任务名称'); return; }
             if (!formData.executeFrequency) { alert('请输入执行频率'); return; }
             if (formData.dramas.length === 0) { alert('请选择短剧'); return; }
-            if (formData.material.selectType === 'sort' && formData.material.sortWay.length === 0) { 
-                alert('请至少选择一个排序方式'); 
-                return; 
-            }
-            if (formData.material.createTime === 'custom' && !formData.material.createTime) { alert('请输入自定义天数'); return; }
-            if (formData.material.statRange === 'recent' && !formData.material.recentDay) { alert('请输入近几天'); return; }
             if (!formData.endConditions[0].value || !formData.endConditions[1].value) { alert('请填写结束运行条件的数值'); return; }
 
             console.log('提交数据：', formData);
