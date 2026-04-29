@@ -454,6 +454,176 @@
         ::-webkit-scrollbar-track {
             background-color: #f1f1f1;
         }
+        /* 短剧搜索新样式 */
+        .drama-search-section {
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            padding: 16px;
+        }
+        .drama-tabs {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+        }
+        .drama-tab {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        .drama-tab input {
+            accent-color: #4080ff;
+        }
+        .drama-tab.active {
+            color: #4080ff;
+            font-weight: 500;
+        }
+        .drama-search-panel {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .drama-search-panel .form-item {
+            margin-bottom: 0;
+        }
+        .drama-search-panel .form-item label {
+            width: auto;
+            text-align: left;
+            padding-right: 8px;
+        }
+        .drama-input {
+            height: 32px;
+            padding: 4px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            width: 180px;
+        }
+        .drama-input:focus {
+            border-color: #4080ff;
+        }
+        .drama-lang-select {
+            height: 32px;
+            padding: 4px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            background-color: #fff;
+            min-width: 120px;
+        }
+        .drama-search-btn {
+            height: 32px;
+            padding: 0 16px;
+            border: 1px solid #4080ff;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #4080ff;
+            color: #fff;
+        }
+        .drama-search-btn:hover {
+            background-color: #66a1ff;
+            border-color: #66a1ff;
+        }
+        .drama-result-card {
+            margin-top: 16px;
+            padding: 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            transition: border-color 0.2s;
+        }
+        .drama-result-card:hover {
+            border-color: #4080ff;
+        }
+        .drama-result-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px 24px;
+            margin-bottom: 12px;
+        }
+        .drama-result-item {
+            display: flex;
+            gap: 8px;
+            font-size: 14px;
+        }
+        .drama-result-item .label {
+            color: #909399;
+        }
+        .drama-result-item .value {
+            color: #606266;
+        }
+        .drama-result-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .drama-add-btn {
+            padding: 6px 16px;
+            background: #fff;
+            border: 1px solid #4080ff;
+            color: #4080ff;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .drama-add-btn:hover {
+            background: #4080ff;
+            color: #fff;
+        }
+        .drama-add-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .drama-placeholder {
+            text-align: center;
+            padding: 24px;
+            color: #909399;
+            font-size: 14px;
+        }
+        .selected-dramas-area {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed #dcdfe6;
+        }
+        .selected-dramas-title {
+            font-size: 14px;
+            color: #606266;
+            margin-bottom: 8px;
+        }
+        .selected-dramas-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .selected-drama-tag {
+            background-color: #f5f7fa;
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 14px;
+            color: #606266;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .selected-drama-tag .remove {
+            cursor: pointer;
+            color: #909399;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .selected-drama-tag .remove:hover {
+            color: #ff4d4f;
+        }
     </style>
 </head>
 <body>
@@ -526,23 +696,47 @@
                         <span class="required">*</span>选择短剧
                     </label>
                     <div class="form-control">
-                        <div class="drama-select-container">
-                            <div class="drama-tags" id="dramaTags">
-                                <div class="drama-tag">
-                                    枫叶互动
-                                    <span class="tag-close" data-tag="枫叶互动">&times;</span>
-                                </div>
-                                <div class="drama-tag">
-                                    蔚元星宸
-                                    <span class="tag-close" data-tag="蔚元星宸">&times;</span>
-                                </div>
-                                <span class="drama-dropdown-arrow" id="dramaDropdownArrow">&#9662;</span>
+                        <div class="drama-search-section">
+                            <div class="drama-tabs">
+                                <label class="drama-tab active" id="tabDramaName">
+                                    <input type="radio" name="dramaSearchMode" value="drama" checked onchange="switchDramaMode('drama')">
+                                    <span>按短剧搜索</span>
+                                </label>
+                                <label class="drama-tab" id="tabPlaybook">
+                                    <input type="radio" name="dramaSearchMode" value="playbook" onchange="switchDramaMode('playbook')">
+                                    <span>按剧本搜索</span>
+                                </label>
                             </div>
-                            <div class="drama-dropdown-menu" id="dramaDropdownMenu">
-                                <div class="dropdown-item">{短剧名称}{短剧编号}</div>
-                                <div class="dropdown-item">短剧A{1001}</div>
-                                <div class="dropdown-item">短剧B{1002}</div>
-                                <div class="dropdown-item">短剧C{1003}</div>
+
+                            <div class="drama-search-panel">
+                                <div class="form-item" id="dramaNamePanel">
+                                    <label>短剧名称</label>
+                                    <input type="text" class="drama-input" placeholder="请输入短剧名称" id="dramaNameInput">
+                                </div>
+                                <div class="form-item" id="playbookPanel" style="display:none">
+                                    <label>剧本</label>
+                                    <input type="text" class="drama-input" placeholder="输入剧本ID或剧本名" id="playbookInput">
+                                </div>
+                                <div class="form-item" id="dramaLangPanel" style="display:none">
+                                    <label>语言</label>
+                                    <select class="drama-lang-select" id="dramaLangSelect">
+                                        <option value="">请选择语言</option>
+                                        <option value="zh">中文</option>
+                                        <option value="en">英文</option>
+                                        <option value="th">泰文</option>
+                                        <option value="ms">马来文</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="drama-search-btn" onclick="searchDramas()">搜索</button>
+                            </div>
+
+                            <div id="dramaSearchResult">
+                                <div class="drama-placeholder">请输入搜索条件进行搜索</div>
+                            </div>
+
+                            <div class="selected-dramas-area" id="selectedDramasArea" style="display:none">
+                                <div class="selected-dramas-title">已选短剧</div>
+                                <div class="selected-dramas-list" id="selectedDramasList"></div>
                             </div>
                         </div>
                     </div>
@@ -746,12 +940,195 @@
         const modalClose = document.getElementById('modalClose');
         const modalOverlay = document.getElementById('modalOverlay');
         const btnCancel = document.getElementById('btnCancel');
-        
+
         const closeModal = () => {
             modalOverlay.style.display = 'none';
         };
         modalClose.addEventListener('click', closeModal);
         btnCancel.addEventListener('click', closeModal);
+
+        // ==================== 短剧搜索功能 ====================
+        function switchDramaMode(mode) {
+            const tabDramaName = document.getElementById('tabDramaName');
+            const tabPlaybook = document.getElementById('tabPlaybook');
+            const dramaNamePanel = document.getElementById('dramaNamePanel');
+            const playbookPanel = document.getElementById('playbookPanel');
+            const dramaLangPanel = document.getElementById('dramaLangPanel');
+            const result = document.getElementById('dramaSearchResult');
+
+            if (mode === 'drama') {
+                tabDramaName.classList.add('active');
+                tabPlaybook.classList.remove('active');
+                dramaNamePanel.style.display = 'flex';
+                playbookPanel.style.display = 'none';
+                dramaLangPanel.style.display = 'none';
+                result.innerHTML = '<div class="drama-placeholder">请输入短剧名称进行搜索</div>';
+            } else {
+                tabPlaybook.classList.add('active');
+                tabDramaName.classList.remove('active');
+                dramaNamePanel.style.display = 'none';
+                playbookPanel.style.display = 'flex';
+                dramaLangPanel.style.display = 'flex';
+                result.innerHTML = '<div class="drama-placeholder">输入剧本ID或剧本名，可选语言筛选</div>';
+            }
+        }
+
+        function searchDramas() {
+            const mode = document.querySelector('input[name="dramaSearchMode"]:checked').value;
+            const dramaName = document.getElementById('dramaNameInput').value;
+            const playbookInput = document.getElementById('playbookInput').value;
+            const lang = document.getElementById('dramaLangSelect').value;
+
+            if (mode === 'drama') {
+                if (!dramaName) {
+                    alert('请输入短剧名称');
+                    return;
+                }
+                const result = document.getElementById('dramaSearchResult');
+                result.innerHTML = `
+                    <div class="drama-result-card">
+                        <div class="drama-result-info">
+                            <div class="drama-result-item">
+                                <span class="label">剧本名称：</span>
+                                <span class="value">繁花</span>
+                            </div>
+                            <div class="drama-result-item">
+                                <span class="label">剧本ID：</span>
+                                <span class="value">L0001</span>
+                            </div>
+                            <div class="drama-result-item">
+                                <span class="label">短剧名称：</span>
+                                <span class="value">繁花</span>
+                            </div>
+                            <div class="drama-result-item">
+                                <span class="label">语言：</span>
+                                <span class="value">中文</span>
+                            </div>
+                        </div>
+                        <div class="drama-result-actions">
+                            <button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                if (!playbookInput) {
+                    alert('请输入剧本ID或剧本名');
+                    return;
+                }
+
+                const langMap = { 'zh': '中文', 'en': '英文', 'th': '泰文', 'ms': '马来文' };
+                const nameMap = { 'zh': '繁花', 'en': 'Blooming', 'th': 'บุษบา', 'ms': 'Mekar' };
+
+                let cards = '';
+                if (lang) {
+                    const langName = langMap[lang];
+                    const dramaNameResult = nameMap[lang];
+                    cards += `
+                        <div class="drama-result-card">
+                            <div class="drama-result-info">
+                                <div class="drama-result-item">
+                                    <span class="label">剧本名称：</span>
+                                    <span class="value">繁花</span>
+                                </div>
+                                <div class="drama-result-item">
+                                    <span class="label">剧本ID：</span>
+                                    <span class="value">L0001</span>
+                                </div>
+                                <div class="drama-result-item">
+                                    <span class="label">短剧名称：</span>
+                                    <span class="value">${dramaNameResult}</span>
+                                </div>
+                                <div class="drama-result-item">
+                                    <span class="label">语言：</span>
+                                    <span class="value">${langName}</span>
+                                </div>
+                            </div>
+                            <div class="drama-result-actions">
+                                <button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const countries = ['新加坡', '马来西亚', '泰国', '菲律宾'];
+                    const langs = ['zh', 'en', 'th', 'ms'];
+                    countries.forEach((country, i) => {
+                        const l = langs[i % langs.length];
+                        const langName = langMap[l];
+                        const dramaNameResult = nameMap[l];
+                        cards += `
+                            <div class="drama-result-card">
+                                <div class="drama-result-info">
+                                    <div class="drama-result-item">
+                                        <span class="label">剧本名称：</span>
+                                        <span class="value">繁花</span>
+                                    </div>
+                                    <div class="drama-result-item">
+                                        <span class="label">剧本ID：</span>
+                                        <span class="value">L0001</span>
+                                    </div>
+                                    <div class="drama-result-item">
+                                        <span class="label">短剧名称：</span>
+                                        <span class="value">${dramaNameResult}</span>
+                                    </div>
+                                    <div class="drama-result-item">
+                                        <span class="label">语言：</span>
+                                        <span class="value">${langName}</span>
+                                    </div>
+                                </div>
+                                <div class="drama-result-actions">
+                                    <button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                const result = document.getElementById('dramaSearchResult');
+                result.innerHTML = cards;
+            }
+        }
+
+        function addDrama(btn) {
+            const card = btn.closest('.drama-result-card');
+            const items = card.querySelectorAll('.drama-result-item .value');
+            const playbookId = items[1].textContent;
+            const playbookName = items[0].textContent;
+            const dramaName = items[2].textContent;
+            const lang = items[3].textContent;
+
+            const tagText = `${playbookId}-${playbookName}-${dramaName}-${lang}`;
+
+            // 检查是否已存在
+            const existingTags = Array.from(document.querySelectorAll('.selected-drama-tag span:first-child'))
+                .map(el => el.textContent);
+            if (existingTags.includes(tagText)) {
+                alert('该短剧已添加');
+                return;
+            }
+
+            const list = document.getElementById('selectedDramasList');
+            const area = document.getElementById('selectedDramasArea');
+            const newTag = document.createElement('div');
+            newTag.className = 'selected-drama-tag';
+            newTag.innerHTML = `
+                <span>${tagText}</span>
+                <span class="remove" onclick="removeDrama(this)">&times;</span>
+            `;
+            list.appendChild(newTag);
+            area.style.display = 'block';
+
+            btn.textContent = '已添加';
+            btn.disabled = true;
+        }
+
+        function removeDrama(btn) {
+            btn.closest('.selected-drama-tag').remove();
+            const area = document.getElementById('selectedDramasArea');
+            const list = document.getElementById('selectedDramasList');
+            if (list.querySelectorAll('.selected-drama-tag').length === 0) {
+                area.style.display = 'none';
+            }
+        }
 
         // 任务名称计数
         const taskNameInput = document.getElementById('taskName');
@@ -786,49 +1163,6 @@
             const closeBtn = newTimeRow.querySelector('.tag-close');
             closeBtn.addEventListener('click', () => {
                 timeRangeContainer.removeChild(newTimeRow);
-            });
-        });
-
-        // 选择短剧
-        const dramaTags = document.getElementById('dramaTags');
-        const dramaDropdownArrow = document.getElementById('dramaDropdownArrow');
-        const dramaDropdownMenu = document.getElementById('dramaDropdownMenu');
-        const tagCloseBtns = document.querySelectorAll('.tag-close');
-
-        dramaTags.addEventListener('click', (e) => {
-            if (e.target === dramaDropdownArrow || e.target === dramaTags) {
-                dramaDropdownMenu.classList.toggle('show');
-            }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!dramaTags.contains(e.target) && !dramaDropdownMenu.contains(e.target)) {
-                dramaDropdownMenu.classList.remove('show');
-            }
-        });
-
-        dramaDropdownMenu.addEventListener('click', (e) => {
-            if (e.target.classList.contains('dropdown-item')) {
-                const text = e.target.textContent;
-                const existingTags = Array.from(document.querySelectorAll('.drama-tag')).map(tag => tag.textContent.trim().replace('×', ''));
-                if (!existingTags.includes(text)) {
-                    const newTag = document.createElement('div');
-                    newTag.className = 'drama-tag';
-                    newTag.innerHTML = `${text}<span class="tag-close" data-tag="${text}">&times;</span>`;
-                    dramaTags.insertBefore(newTag, dramaDropdownArrow);
-                    newTag.querySelector('.tag-close').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        dramaTags.removeChild(newTag);
-                    });
-                }
-                dramaDropdownMenu.classList.remove('show');
-            }
-        });
-
-        tagCloseBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dramaTags.removeChild(btn.parentElement);
             });
         });
 
@@ -1011,7 +1345,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                     end: row.querySelectorAll('.time-input')[1].value
                 })),
                 executeFrequency: document.getElementById('executeFrequency').value,
-                dramas: Array.from(document.querySelectorAll('.drama-tag')).map(t => t.textContent.trim().replace('×', '')),
+                dramas: Array.from(document.querySelectorAll('.selected-drama-tag span:first-child')).map(t => t.textContent),
                 // 固定结束条件
                 endConditions: [
                     { metric: 'series_count', name: '单账户在投总系列数', operator: '>=', value: document.querySelectorAll('#endConditionGroup .condition-input')[0].value },
