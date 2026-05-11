@@ -510,6 +510,21 @@
         .drama-input:focus {
             border-color: #4080ff;
         }
+        .drama-textarea {
+            padding: 4px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            outline: none;
+            width: 220px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+        .drama-textarea:focus {
+            border-color: #4080ff;
+        }
         .drama-lang-select {
             height: 32px;
             padding: 4px 12px;
@@ -711,11 +726,11 @@
                             <div class="drama-search-panel">
                                 <div class="form-item" id="dramaNamePanel">
                                     <label>短剧名称</label>
-                                    <input type="text" class="drama-input" placeholder="请输入短剧名称" id="dramaNameInput">
+                                    <textarea class="drama-textarea" rows="2" placeholder="请输入短剧名称，每行一个" id="dramaNameInput"></textarea>
                                 </div>
                                 <div class="form-item" id="playbookPanel" style="display:none">
                                     <label>剧本</label>
-                                    <input type="text" class="drama-input" placeholder="输入剧本ID或剧本名" id="playbookInput">
+                                    <textarea class="drama-textarea" rows="2" placeholder="输入剧本ID或剧本名，每行一个" id="playbookInput"></textarea>
                                 </div>
                                 <div class="form-item" id="dramaLangPanel" style="display:none">
                                     <label>语言</label>
@@ -962,30 +977,32 @@
                 dramaNamePanel.style.display = 'flex';
                 playbookPanel.style.display = 'none';
                 dramaLangPanel.style.display = 'none';
-                result.innerHTML = '<div class="drama-placeholder">请输入短剧名称进行搜索</div>';
+                result.innerHTML = '<div class="drama-placeholder">请输入短剧名称，每行一个，支持同时搜索多个</div>';
             } else {
                 tabPlaybook.classList.add('active');
                 tabDramaName.classList.remove('active');
                 dramaNamePanel.style.display = 'none';
                 playbookPanel.style.display = 'flex';
                 dramaLangPanel.style.display = 'flex';
-                result.innerHTML = '<div class="drama-placeholder">输入剧本ID或剧本名，可选语言筛选</div>';
+                result.innerHTML = '<div class="drama-placeholder">输入剧本ID或剧本名，每行一个，可选语言筛选</div>';
             }
         }
 
         function searchDramas() {
             const mode = document.querySelector('input[name="dramaSearchMode"]:checked').value;
-            const dramaName = document.getElementById('dramaNameInput').value;
-            const playbookInput = document.getElementById('playbookInput').value;
+            const dramaNameRaw = document.getElementById('dramaNameInput').value.trim();
+            const playbookRaw = document.getElementById('playbookInput').value.trim();
             const lang = document.getElementById('dramaLangSelect').value;
 
+            const result = document.getElementById('dramaSearchResult');
+
             if (mode === 'drama') {
-                if (!dramaName) {
+                if (!dramaNameRaw) {
                     alert('请输入短剧名称');
                     return;
                 }
-                const result = document.getElementById('dramaSearchResult');
-                result.innerHTML = `
+                const names = dramaNameRaw.split('\n').map(s => s.trim()).filter(s => s);
+                const cards = names.map((name, i) => `
                     <div class="drama-result-card">
                         <div class="drama-result-info">
                             <div class="drama-result-item">
@@ -994,11 +1011,11 @@
                             </div>
                             <div class="drama-result-item">
                                 <span class="label">剧本ID：</span>
-                                <span class="value">L0001</span>
+                                <span class="value">L${String(i + 1).padStart(4, '0')}</span>
                             </div>
                             <div class="drama-result-item">
                                 <span class="label">短剧名称：</span>
-                                <span class="value">繁花</span>
+                                <span class="value">${name}</span>
                             </div>
                             <div class="drama-result-item">
                                 <span class="label">语言：</span>
@@ -1009,52 +1026,23 @@
                             <button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button>
                         </div>
                     </div>
-                `;
+                `).join('');
+                result.innerHTML = cards;
             } else {
-                if (!playbookInput) {
+                if (!playbookRaw) {
                     alert('请输入剧本ID或剧本名');
                     return;
                 }
+                const playbooks = playbookRaw.split('\n').map(s => s.trim()).filter(s => s);
 
                 const langMap = { 'zh': '中文', 'en': '英文', 'th': '泰文', 'ms': '马来文' };
                 const nameMap = { 'zh': '繁花', 'en': 'Blooming', 'th': 'บุษบา', 'ms': 'Mekar' };
 
                 let cards = '';
-                if (lang) {
-                    const langName = langMap[lang];
-                    const dramaNameResult = nameMap[lang];
-                    cards += `
-                        <div class="drama-result-card">
-                            <div class="drama-result-info">
-                                <div class="drama-result-item">
-                                    <span class="label">剧本名称：</span>
-                                    <span class="value">繁花</span>
-                                </div>
-                                <div class="drama-result-item">
-                                    <span class="label">剧本ID：</span>
-                                    <span class="value">L0001</span>
-                                </div>
-                                <div class="drama-result-item">
-                                    <span class="label">短剧名称：</span>
-                                    <span class="value">${dramaNameResult}</span>
-                                </div>
-                                <div class="drama-result-item">
-                                    <span class="label">语言：</span>
-                                    <span class="value">${langName}</span>
-                                </div>
-                            </div>
-                            <div class="drama-result-actions">
-                                <button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    const countries = ['新加坡', '马来西亚', '泰国', '菲律宾'];
-                    const langs = ['zh', 'en', 'th', 'ms'];
-                    countries.forEach((country, i) => {
-                        const l = langs[i % langs.length];
-                        const langName = langMap[l];
-                        const dramaNameResult = nameMap[l];
+                playbooks.forEach(pb => {
+                    if (lang) {
+                        const langName = langMap[lang];
+                        const dramaNameResult = nameMap[lang];
                         cards += `
                             <div class="drama-result-card">
                                 <div class="drama-result-info">
@@ -1064,7 +1052,7 @@
                                     </div>
                                     <div class="drama-result-item">
                                         <span class="label">剧本ID：</span>
-                                        <span class="value">L0001</span>
+                                        <span class="value">${pb}</span>
                                     </div>
                                     <div class="drama-result-item">
                                         <span class="label">短剧名称：</span>
@@ -1080,10 +1068,40 @@
                                 </div>
                             </div>
                         `;
-                    });
-                }
+                    } else {
+                        const langs = ['zh', 'en', 'th', 'ms'];
+                        langs.forEach((l, i) => {
+                            const langName = langMap[l];
+                            const dramaNameResult = nameMap[l];
+                            cards += `
+                                <div class="drama-result-card">
+                                    <div class="drama-result-info">
+                                        <div class="drama-result-item">
+                                            <span class="label">剧本名称：</span>
+                                            <span class="value">繁花</span>
+                                        </div>
+                                        <div class="drama-result-item">
+                                            <span class="label">剧本ID：</span>
+                                            <span class="value">${pb}</span>
+                                        </div>
+                                        <div class="drama-result-item">
+                                            <span class="label">短剧名称：</span>
+                                            <span class="value">${dramaNameResult}</span>
+                                        </div>
+                                        <div class="drama-result-item">
+                                            <span class="label">语言：</span>
+                                            <span class="value">${langName}</span>
+                                        </div>
+                                    </div>
+                                    <div class="drama-result-actions">
+                                        <button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                });
 
-                const result = document.getElementById('dramaSearchResult');
                 result.innerHTML = cards;
             }
         }
