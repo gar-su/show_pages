@@ -639,6 +639,67 @@
         .selected-drama-tag .remove:hover {
             color: #ff4d4f;
         }
+
+        /* 素材预览区域 */
+        .material-preview-section {
+            margin-top: 24px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            display: none;
+        }
+        .material-preview-section.show {
+            display: block;
+        }
+        .material-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #ebeef5;
+            font-size: 14px;
+            color: #606266;
+            font-weight: 500;
+        }
+        .material-preview-table-wrap {
+            overflow-x: auto;
+        }
+        .material-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 960px;
+        }
+        .material-preview-table th {
+            padding: 8px 12px;
+            border-bottom: 1px solid #ebeef5;
+            color: #909399;
+            font-weight: 500;
+            text-align: left;
+            background: #f5f7fa;
+            white-space: nowrap;
+        }
+        .material-preview-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #ebeef5;
+            color: #606266;
+            white-space: nowrap;
+        }
+        .material-preview-table tbody tr:hover {
+            background-color: #f5f7fa;
+        }
+        .material-preview-empty {
+            text-align: center;
+            padding: 32px;
+            color: #909399;
+            font-size: 14px;
+        }
+        .material-preview-footer {
+            padding: 8px 16px;
+            border-top: 1px solid #ebeef5;
+            font-size: 12px;
+            color: #909399;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -941,9 +1002,21 @@
                 </div>
                 <!-- ==================== 素材配置模块 结束 ==================== -->
 
+                <!-- 素材预览区域 -->
+                <div class="material-preview-section" id="materialPreviewSection">
+                    <div class="material-preview-header">
+                        <span id="materialPreviewTitle">素材预览</span>
+                        <span class="tag-close" onclick="closeMaterialPreview()" style="cursor:pointer;">&times;</span>
+                    </div>
+                    <div id="materialPreviewContent">
+                        <div class="material-preview-empty">点击「预览素材」查看匹配结果</div>
+                    </div>
+                </div>
+
                 <!-- 底部操作按钮 -->
                 <div class="form-footer">
                     <button type="button" class="btn-cancel" id="btnCancel">取消</button>
+                    <button type="button" class="btn-cancel" id="btnPreview" onclick="toggleMaterialPreview()" style="border-color:#4080ff;color:#4080ff;">预览素材</button>
                     <button type="submit" class="btn-submit">确定</button>
                 </div>
             </form>
@@ -1137,6 +1210,7 @@
 
             btn.textContent = '已添加';
             btn.disabled = true;
+            resetMaterialPreview();
         }
 
         function removeDrama(btn) {
@@ -1146,6 +1220,7 @@
             if (list.querySelectorAll('.selected-drama-tag').length === 0) {
                 area.style.display = 'none';
             }
+            resetMaterialPreview();
         }
 
         // 任务名称计数
@@ -1192,6 +1267,7 @@
             btn.addEventListener('click', () => {
                 createTimeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                resetMaterialPreview();
             });
         });
 
@@ -1206,6 +1282,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                 materialCountBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 materialCountInput.style.display = btn.dataset.type === 'custom' ? 'flex' : 'none';
+                resetMaterialPreview();
             });
         });
         materialFilterTypeBtns.forEach(btn => {
@@ -1218,11 +1295,13 @@ const statRangeItem = document.getElementById('statRangeItem');
             btn.addEventListener('click', () => {
                 sortMetricBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                resetMaterialPreview();
             });
         });
 
         checkMaterialFilterVisible();
                 checkMaterialConditionRequired();
+            resetMaterialPreview();
             });
         });
 
@@ -1239,6 +1318,7 @@ const statRangeItem = document.getElementById('statRangeItem');
             btn.addEventListener('click', () => {
                 statRangeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                resetMaterialPreview();
             });
         });
 
@@ -1310,6 +1390,7 @@ const statRangeItem = document.getElementById('statRangeItem');
             });
             togglePercentSuffix(newRow);
             checkMaterialConditionDuplicate();
+            resetMaterialPreview();
         });
 
         const checkMaterialConditionRequired = () => {
@@ -1317,6 +1398,12 @@ const statRangeItem = document.getElementById('statRangeItem');
             const needCheck = filterType === 'custom';
             const hasRows = document.querySelectorAll('#materialConditionGroup .condition-row').length > 0;
             document.getElementById('materialConditionRequired').classList.toggle('show', needCheck && !hasRows);
+            const previewBtn = document.getElementById('btnPreview');
+            if (previewBtn) {
+                previewBtn.disabled = !(!needCheck || hasRows);
+                previewBtn.style.opacity = (!needCheck || hasRows) ? '1' : '0.5';
+                previewBtn.style.cursor = (!needCheck || hasRows) ? 'pointer' : 'not-allowed';
+            }
             return !needCheck || hasRows;
         };
 
@@ -1340,6 +1427,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                 repeatCountBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 repeatCountInput.style.display = btn.dataset.type === 'custom' ? 'flex' : 'none';
+                resetMaterialPreview();
             });
         });
 
@@ -1398,6 +1486,97 @@ const statRangeItem = document.getElementById('statRangeItem');
             alert('任务创建成功！');
             closeModal();
         });
+
+        // ==================== 素材预览功能 ====================
+        const mockMaterialData = [
+            { name: '素材_001.mp4', bookId: 'L0001', bookName: '繁花', drama: '繁花', lang: '中文', cost: 1234, doroi: 2.3, compliance: 85, created: '2026-05-12' },
+            { name: '素材_002.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Blooming', lang: '英文', cost: 856, doroi: 1.8, compliance: 72, created: '2026-05-11' },
+            { name: '素材_003.mp4', bookId: 'L0001', bookName: '繁花', drama: 'บุษบา', lang: '泰文', cost: 2100, doroi: 3.1, compliance: 91, created: '2026-05-10' },
+            { name: '素材_004.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Mekar', lang: '马来文', cost: 450, doroi: 0.9, compliance: 58, created: '2026-05-13' },
+            { name: '素材_005.mp4', bookId: 'L0002', bookName: '狂飙', drama: '狂飙', lang: '中文', cost: 3200, doroi: 4.5, compliance: 95, created: '2026-05-09' },
+            { name: '素材_006.mp4', bookId: 'L0002', bookName: '狂飙', drama: 'The Knockout', lang: '英文', cost: 1890, doroi: 2.7, compliance: 80, created: '2026-05-08' },
+            { name: '素材_007.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: '漫长的季节', lang: '中文', cost: 670, doroi: 1.5, compliance: 66, created: '2026-05-11' },
+            { name: '素材_008.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: 'The Long Season', lang: '英文', cost: 980, doroi: 2.0, compliance: 74, created: '2026-05-07' },
+            { name: '素材_009.mp4', bookId: 'L0004', bookName: '三体', drama: '三体', lang: '中文', cost: 5600, doroi: 5.2, compliance: 98, created: '2026-05-13' },
+            { name: '素材_010.mp4', bookId: 'L0004', bookName: '三体', drama: 'Three-Body', lang: '英文', cost: 4200, doroi: 4.8, compliance: 93, created: '2026-05-06' },
+            { name: '素材_011.mp4', bookId: 'L0005', bookName: '庆余年', drama: '庆余年', lang: '中文', cost: 1500, doroi: 2.9, compliance: 82, created: '2026-05-12' },
+            { name: '素材_012.mp4', bookId: 'L0005', bookName: '庆余年', drama: 'Joy of Life', lang: '英文', cost: 1100, doroi: 2.1, compliance: 76, created: '2026-05-10' },
+        ];
+
+        function generatePreviewData() {
+            const count = Math.floor(Math.random() * 5) + 6;
+            const shuffled = [...mockMaterialData].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, count).sort((a, b) => b.cost - a.cost);
+        }
+
+        let previewVisible = false;
+
+        function toggleMaterialPreview() {
+            const section = document.getElementById('materialPreviewSection');
+            const content = document.getElementById('materialPreviewContent');
+            const btn = document.getElementById('btnPreview');
+
+            if (previewVisible) {
+                previewVisible = false;
+                section.classList.remove('show');
+                btn.textContent = '预览素材';
+                return;
+            }
+
+            previewVisible = true;
+            section.classList.add('show');
+            btn.textContent = '收起预览';
+            content.innerHTML = '<div class="material-preview-empty">正在查询匹配素材...</div>';
+
+            setTimeout(() => {
+                const data = generatePreviewData();
+                if (data.length === 0) {
+                    content.innerHTML = '<div class="material-preview-empty">未找到匹配的素材，请调整筛选条件</div>';
+                    return;
+                }
+                const rows = data.map(d => `
+                    <tr>
+                        <td>${d.name}</td>
+                        <td>${d.bookId}</td>
+                        <td>${d.bookName}</td>
+                        <td>${d.drama}</td>
+                        <td>${d.lang}</td>
+                        <td>¥${d.cost.toLocaleString()}</td>
+                        <td>${d.doroi}</td>
+                        <td>${d.compliance}%</td>
+                        <td>${d.created}</td>
+                    </tr>
+                `).join('');
+                const limitNote = data.length > 10 ? `<div class="material-preview-footer">共 ${data.length} 条，仅展示前 10 条</div>` : `<div class="material-preview-footer">共 ${data.length} 条</div>`;
+                content.innerHTML = `
+                    <div class="material-preview-table-wrap">
+                        <table class="material-preview-table">
+                            <thead>
+                                <tr>
+                                    <th>素材名称</th><th>剧本ID</th><th>剧本名称</th><th>短剧</th><th>语言</th><th>消耗</th><th>DOROI</th><th>达标率</th><th>创建时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                    ${limitNote}
+                `;
+            }, 600);
+        }
+
+        function closeMaterialPreview() {
+            previewVisible = false;
+            const section = document.getElementById('materialPreviewSection');
+            section.classList.remove('show');
+            document.getElementById('btnPreview').textContent = '预览素材';
+        }
+
+        function resetMaterialPreview() {
+            if (previewVisible) {
+                closeMaterialPreview();
+            }
+            document.getElementById('materialPreviewContent').innerHTML = '<div class="material-preview-empty">点击「预览素材」查看匹配结果</div>';
+        }
     </script>
 </body>
 </html>
