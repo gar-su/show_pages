@@ -1553,12 +1553,12 @@ const statRangeItem = document.getElementById('statRangeItem');
                 const displayData = data.length > 10 ? data.slice(0, 10) : data;
                 const rows = displayData.map(d => `
                     <tr>
-                        <td>${d.name}</td>
+                        <td style="color:#4080ff;text-decoration:underline;cursor:pointer;">${d.name}</td>
                         <td>${d.bookId}</td>
                         <td>${d.bookName}</td>
                         <td>${d.drama}</td>
                         <td>${d.lang}</td>
-                        <td>¥${d.cost.toLocaleString()}</td>
+                        <td>$${d.cost.toLocaleString()}</td>
                         <td>${d.doroi}</td>
                         <td>${d.compliance}%</td>
                         <td>${d.created}</td>
@@ -1570,7 +1570,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                         <table class="material-preview-table">
                             <thead>
                                 <tr>
-                                    <th>素材名称</th><th>剧本ID</th><th>剧本名称</th><th>短剧</th><th>语言</th><th>消耗</th><th>DOROI</th><th>达标率</th><th>创建时间</th>
+                                    <th>素材名称</th><th>剧本ID</th><th>剧本名称</th><th>短剧</th><th>语言</th><th>消耗</th><th>DOROI</th><th>综合达标率</th><th>创建时间</th>
                                 </tr>
                             </thead>
                             <tbody>${rows}</tbody>
