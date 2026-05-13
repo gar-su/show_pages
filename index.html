@@ -990,6 +990,17 @@
                     </div>
                 </div>
 
+                <!-- 多轮任务不投重复素材 -->
+                <div class="form-item">
+                    <label>多轮任务不投重复素材</label>
+                    <div class="form-control">
+                        <div class="btn-group" id="dedupAcrossRounds">
+                            <button type="button" class="btn-option active" data-value="0">关闭</button>
+                            <button type="button" class="btn-option" data-value="1">开启</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 广告数 -->
                 <div class="form-item">
                     <label>广告数</label>
@@ -1486,6 +1497,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                     }),
                     repeatCount: document.querySelector('#repeatCountType .btn-option.active').dataset.type === 'custom'
                         ? document.getElementById('repeatCount').value || 30 : 'unlimit',
+                    dedupAcrossRounds: document.querySelector('#dedupAcrossRounds .btn-option.active').dataset.value === '1',
                     adCount: document.getElementById('adCount').value || 30
                 }
             };
