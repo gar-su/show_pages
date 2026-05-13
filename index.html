@@ -1337,6 +1337,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                 singleInput.classList.toggle('hide', isBetween);
                 betweenInput.classList.toggle('show', isBetween);
                 checkMaterialConditionDuplicate();
+                resetMaterialPreview();
             });
         };
 
@@ -1382,14 +1383,20 @@ const statRangeItem = document.getElementById('statRangeItem');
                 <button type="button" class="condition-delete">&times;</button>
             `;
             materialConditionGroup.appendChild(newRow);
-            newRow.querySelector('.condition-delete').addEventListener('click', () => newRow.remove());
+            newRow.querySelector('.condition-delete').addEventListener('click', () => {
+                newRow.remove();
+                resetMaterialPreview();
+                checkMaterialConditionRequired();
+            });
             bindOperatorChange(newRow);
             newRow.querySelector('.material-condition-metric').addEventListener('change', function() {
                 checkMaterialConditionDuplicate();
+                resetMaterialPreview();
                 togglePercentSuffix(newRow);
             });
             togglePercentSuffix(newRow);
             checkMaterialConditionDuplicate();
+            checkMaterialConditionRequired();
             resetMaterialPreview();
         });
 
@@ -1411,13 +1418,18 @@ const statRangeItem = document.getElementById('statRangeItem');
             bindOperatorChange(row);
             row.querySelector('.material-condition-metric').addEventListener('change', function() {
                 checkMaterialConditionDuplicate();
+                resetMaterialPreview();
                 togglePercentSuffix(row);
             });
             togglePercentSuffix(row);
         });
         // 只绑定素材区域的删除按钮，不绑定结束条件
         document.querySelectorAll('#materialConditionGroup .condition-delete').forEach(btn => {
-            btn.addEventListener('click', () => btn.parentElement.remove());
+            btn.addEventListener('click', () => {
+                btn.parentElement.remove();
+                resetMaterialPreview();
+                checkMaterialConditionRequired();
+            });
         });
 
         const repeatCountBtns = document.querySelectorAll('#repeatCountType .btn-option');
