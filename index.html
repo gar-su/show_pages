@@ -1516,14 +1516,17 @@ const statRangeItem = document.getElementById('statRangeItem');
         ];
 
         function generatePreviewData() {
-            const count = Math.floor(Math.random() * 5) + 6;
+            const count = Math.floor(Math.random() * 10) + 6;
             const shuffled = [...mockMaterialData].sort(() => Math.random() - 0.5);
             return shuffled.slice(0, count).sort((a, b) => b.cost - a.cost);
         }
 
         let previewVisible = false;
+        let previewTimer = null;
 
         function toggleMaterialPreview() {
+            clearTimeout(previewTimer);
+
             const section = document.getElementById('materialPreviewSection');
             const content = document.getElementById('materialPreviewContent');
             const btn = document.getElementById('btnPreview');
@@ -1540,13 +1543,14 @@ const statRangeItem = document.getElementById('statRangeItem');
             btn.textContent = '收起预览';
             content.innerHTML = '<div class="material-preview-empty">正在查询匹配素材...</div>';
 
-            setTimeout(() => {
+            previewTimer = setTimeout(() => {
                 const data = generatePreviewData();
                 if (data.length === 0) {
                     content.innerHTML = '<div class="material-preview-empty">未找到匹配的素材，请调整筛选条件</div>';
                     return;
                 }
-                const rows = data.map(d => `
+                const displayData = data.length > 10 ? data.slice(0, 10) : data;
+                const rows = displayData.map(d => `
                     <tr>
                         <td>${d.name}</td>
                         <td>${d.bookId}</td>
@@ -1577,6 +1581,8 @@ const statRangeItem = document.getElementById('statRangeItem');
         }
 
         function closeMaterialPreview() {
+            clearTimeout(previewTimer);
+            previewTimer = null;
             previewVisible = false;
             const section = document.getElementById('materialPreviewSection');
             section.classList.remove('show');
