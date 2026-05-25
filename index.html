@@ -1013,6 +1013,31 @@
                 </div>
                 <!-- ==================== 素材配置模块 结束 ==================== -->
 
+                <!-- 投放账户模块 -->
+                <div class="form-group-title">投放账户</div>
+
+                <!-- 投放账户 -->
+                <div class="form-item">
+                    <label>
+                        <span class="required">*</span>投放账户
+                    </label>
+                    <div class="form-control">
+                        <select class="condition-select" id="accountPackage" style="min-width:280px;">
+                            <option value="">请选择账户包</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 选择定向包 -->
+                <div class="form-item">
+                    <label>选择定向包</label>
+                    <div class="form-control">
+                        <select class="condition-select" id="targetingPackage" style="min-width:280px;">
+                            <option value="">在此处选择定向包将会覆盖账户内定向包</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- 素材预览区域 -->
                 <div class="material-preview-section" id="materialPreviewSection">
                     <div class="material-preview-header">
@@ -1045,6 +1070,27 @@
         };
         modalClose.addEventListener('click', closeModal);
         btnCancel.addEventListener('click', closeModal);
+
+        // ==================== 投放账户模块 ====================
+        const mockAccountPackages = ['账户包A-北美投放', '账户包B-东南亚投放', '账户包C-欧洲投放', '账户包D-日韩投放', '账户包E-全球投放'];
+        const mockTargetingPackages = ['定向包1-兴趣标签', '定向包2-行为定向', '定向包3-相似人群', '定向包4-再营销', '定向包5-广泛匹配'];
+
+        const accountPackageSelect = document.getElementById('accountPackage');
+        const targetingPackageSelect = document.getElementById('targetingPackage');
+
+        mockAccountPackages.forEach(pkg => {
+            const opt = document.createElement('option');
+            opt.value = pkg;
+            opt.textContent = pkg;
+            accountPackageSelect.appendChild(opt);
+        });
+
+        mockTargetingPackages.forEach(pkg => {
+            const opt = document.createElement('option');
+            opt.value = pkg;
+            opt.textContent = pkg;
+            targetingPackageSelect.appendChild(opt);
+        });
 
         // ==================== 短剧搜索功能 ====================
         function switchDramaMode(mode) {
@@ -1481,6 +1527,10 @@ const statRangeItem = document.getElementById('statRangeItem');
                     { metric: 'series_count', name: '单账户在投总系列数', operator: '>=', value: document.querySelectorAll('#endConditionGroup .condition-input')[0].value },
                     { metric: 'account_count', name: '账户数', operator: '>=', value: document.querySelectorAll('#endConditionGroup .condition-input')[1].value }
                 ],
+                account: {
+                    package: document.getElementById('accountPackage').value,
+                    targetingPackage: document.getElementById('targetingPackage').value || null
+                },
                 material: {
                     createTime: document.querySelector('#materialCreateTime .btn-option.active').dataset.day,
                     filterType: document.querySelector('#materialFilterType .btn-option.active').dataset.type,
@@ -1506,6 +1556,7 @@ const statRangeItem = document.getElementById('statRangeItem');
             if (!formData.executeFrequency) { alert('请输入执行频率'); return; }
             if (formData.dramas.length === 0) { alert('请选择短剧'); return; }
             if (!formData.endConditions[0].value || !formData.endConditions[1].value) { alert('请填写结束运行条件的数值'); return; }
+            if (!formData.account.package) { alert('请选择投放账户'); return; }
 
             console.log('提交数据：', formData);
             alert('任务创建成功！');
