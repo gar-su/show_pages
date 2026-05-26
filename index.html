@@ -1032,9 +1032,12 @@
                 <div class="form-item">
                     <label>选择定向包</label>
                     <div class="form-control">
-                        <select class="condition-select" id="targetingPackage" style="min-width:280px;">
-                            <option value="">在此处选择定向包将会覆盖账户内定向包</option>
-                        </select>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <select class="condition-select" id="targetingPackage" style="min-width:280px;">
+                                <option value="">请选择定向包</option>
+                            </select>
+                            <a href="#" class="add-time-btn" style="line-height:32px;text-decoration:none;" onclick="event.preventDefault();">新建定向包</a>
+                        </div>
                     </div>
                 </div>
 
