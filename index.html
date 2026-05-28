@@ -927,6 +927,7 @@
                                     <option value="cost">消耗</option>
                                     <option value="doroi">DOROI</option>
                                     <option value="compliance">综合达标率</option>
+                                    <option value="old_compliance">老达标率</option>
                                 </select>
                                 <select class="condition-operator material-condition-operator">
                                     <option value=">=">>=</option>
@@ -971,6 +972,7 @@
                             <button type="button" class="btn-option active" data-metric="compliance">综合达标率</button>
                             <button type="button" class="btn-option" data-metric="cost">消耗</button>
                             <button type="button" class="btn-option" data-metric="doroi">D0ROI</button>
+                            <button type="button" class="btn-option" data-metric="old_compliance">老达标率</button>
                         </div>
                     </div>
                 </div>
@@ -1028,17 +1030,15 @@
                     </div>
                 </div>
 
-                <!-- 选择定向包 -->
+                <!-- 定向包 -->
                 <div class="form-item">
                     <label>
-                        <span class="required">*</span>选择定向包
+                        <span class="required">*</span>定向包
                     </label>
                     <div class="form-control">
                         <div style="display:flex;align-items:center;gap:12px;">
-                            <select class="condition-select" id="targetingPackage" style="min-width:280px;">
-                                <option value="">请选择定向包</option>
-                            </select>
-                            <a href="#" class="add-time-btn" style="line-height:32px;text-decoration:none;" onclick="event.preventDefault();">新建定向包</a>
+                            <span id="targetingPackageLabel" style="color:#909399;font-size:14px;line-height:32px;">未选择</span>
+                            <a href="#" class="add-time-btn" style="line-height:32px;text-decoration:none;" id="selectTargetingBtn" onclick="openTargetingModal();return false;">选择定向包</a>
                         </div>
                     </div>
                 </div>
@@ -1081,7 +1081,6 @@
         const mockTargetingPackages = ['定向包1-兴趣标签', '定向包2-行为定向', '定向包3-相似人群', '定向包4-再营销', '定向包5-广泛匹配'];
 
         const accountPackageSelect = document.getElementById('accountPackage');
-        const targetingPackageSelect = document.getElementById('targetingPackage');
 
         mockAccountPackages.forEach(pkg => {
             const opt = document.createElement('option');
@@ -1090,12 +1089,22 @@
             accountPackageSelect.appendChild(opt);
         });
 
-        mockTargetingPackages.forEach(pkg => {
-            const opt = document.createElement('option');
-            opt.value = pkg;
-            opt.textContent = pkg;
-            targetingPackageSelect.appendChild(opt);
-        });
+        // 定向包弹窗选择
+        let selectedTargetingPackage = null;
+
+        function openTargetingModal() {
+            const pkg = prompt('请选择定向包：\n' + mockTargetingPackages.map((p, i) => `${i + 1}. ${p}`).join('\n'));
+            if (pkg) {
+                const idx = parseInt(pkg) - 1;
+                if (idx >= 0 && idx < mockTargetingPackages.length) {
+                    selectedTargetingPackage = mockTargetingPackages[idx];
+                } else {
+                    selectedTargetingPackage = pkg;
+                }
+                document.getElementById('targetingPackageLabel').textContent = selectedTargetingPackage;
+                document.getElementById('targetingPackageLabel').style.color = '#606266';
+            }
+        }
 
         // ==================== 短剧搜索功能 ====================
         function switchDramaMode(mode) {
@@ -1386,7 +1395,7 @@ const statRangeItem = document.getElementById('statRangeItem');
 
         const togglePercentSuffix = (row) => {
             const metric = row.querySelector('.material-condition-metric').value;
-            const showPercent = metric === 'doroi' || metric === 'compliance';
+            const showPercent = metric === 'doroi' || metric === 'compliance' || metric === 'old_compliance';
             row.querySelectorAll('.condition-input-suffix').forEach(s => s.style.display = showPercent ? 'inline' : 'none');
         };
 
@@ -1420,6 +1429,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                     <option value="cost">消耗</option>
                     <option value="doroi">DOROI</option>
                     <option value="compliance">综合达标率</option>
+                    <option value="old_compliance">老达标率</option>
                 </select>
                 <select class="condition-operator material-condition-operator">
                     <option value=">=">>=</option><option value=">">></option><option value="=">=</option>
@@ -1534,7 +1544,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                 ],
                 account: {
                     package: document.getElementById('accountPackage').value,
-                    targetingPackage: document.getElementById('targetingPackage').value || null
+                    targetingPackage: selectedTargetingPackage
                 },
                 material: {
                     createTime: document.querySelector('#materialCreateTime .btn-option.active').dataset.day,
@@ -1570,18 +1580,18 @@ const statRangeItem = document.getElementById('statRangeItem');
 
         // ==================== 素材预览功能 ====================
         const mockMaterialData = [
-            { name: '素材_001.mp4', bookId: 'L0001', bookName: '繁花', drama: '繁花', lang: '中文', cost: 1234, doroi: 2.3, compliance: 85, created: '2026-05-12' },
-            { name: '素材_002.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Blooming', lang: '英文', cost: 856, doroi: 1.8, compliance: 72, created: '2026-05-11' },
-            { name: '素材_003.mp4', bookId: 'L0001', bookName: '繁花', drama: 'บุษบา', lang: '泰文', cost: 2100, doroi: 3.1, compliance: 91, created: '2026-05-10' },
-            { name: '素材_004.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Mekar', lang: '马来文', cost: 450, doroi: 0.9, compliance: 58, created: '2026-05-13' },
-            { name: '素材_005.mp4', bookId: 'L0002', bookName: '狂飙', drama: '狂飙', lang: '中文', cost: 3200, doroi: 4.5, compliance: 95, created: '2026-05-09' },
-            { name: '素材_006.mp4', bookId: 'L0002', bookName: '狂飙', drama: 'The Knockout', lang: '英文', cost: 1890, doroi: 2.7, compliance: 80, created: '2026-05-08' },
-            { name: '素材_007.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: '漫长的季节', lang: '中文', cost: 670, doroi: 1.5, compliance: 66, created: '2026-05-11' },
-            { name: '素材_008.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: 'The Long Season', lang: '英文', cost: 980, doroi: 2.0, compliance: 74, created: '2026-05-07' },
-            { name: '素材_009.mp4', bookId: 'L0004', bookName: '三体', drama: '三体', lang: '中文', cost: 5600, doroi: 5.2, compliance: 98, created: '2026-05-13' },
-            { name: '素材_010.mp4', bookId: 'L0004', bookName: '三体', drama: 'Three-Body', lang: '英文', cost: 4200, doroi: 4.8, compliance: 93, created: '2026-05-06' },
-            { name: '素材_011.mp4', bookId: 'L0005', bookName: '庆余年', drama: '庆余年', lang: '中文', cost: 1500, doroi: 2.9, compliance: 82, created: '2026-05-12' },
-            { name: '素材_012.mp4', bookId: 'L0005', bookName: '庆余年', drama: 'Joy of Life', lang: '英文', cost: 1100, doroi: 2.1, compliance: 76, created: '2026-05-10' },
+            { name: '素材_001.mp4', bookId: 'L0001', bookName: '繁花', drama: '繁花', lang: '中文', cost: 1234, doroi: 2.3, compliance: 85, oldCompliance: 78, created: '2026-05-12' },
+            { name: '素材_002.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Blooming', lang: '英文', cost: 856, doroi: 1.8, compliance: 72, oldCompliance: 65, created: '2026-05-11' },
+            { name: '素材_003.mp4', bookId: 'L0001', bookName: '繁花', drama: 'บุษบา', lang: '泰文', cost: 2100, doroi: 3.1, compliance: 91, oldCompliance: 88, created: '2026-05-10' },
+            { name: '素材_004.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Mekar', lang: '马来文', cost: 450, doroi: 0.9, compliance: 58, oldCompliance: 42, created: '2026-05-13' },
+            { name: '素材_005.mp4', bookId: 'L0002', bookName: '狂飙', drama: '狂飙', lang: '中文', cost: 3200, doroi: 4.5, compliance: 95, oldCompliance: 91, created: '2026-05-09' },
+            { name: '素材_006.mp4', bookId: 'L0002', bookName: '狂飙', drama: 'The Knockout', lang: '英文', cost: 1890, doroi: 2.7, compliance: 80, oldCompliance: 73, created: '2026-05-08' },
+            { name: '素材_007.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: '漫长的季节', lang: '中文', cost: 670, doroi: 1.5, compliance: 66, oldCompliance: 55, created: '2026-05-11' },
+            { name: '素材_008.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: 'The Long Season', lang: '英文', cost: 980, doroi: 2.0, compliance: 74, oldCompliance: 68, created: '2026-05-07' },
+            { name: '素材_009.mp4', bookId: 'L0004', bookName: '三体', drama: '三体', lang: '中文', cost: 5600, doroi: 5.2, compliance: 98, oldCompliance: 96, created: '2026-05-13' },
+            { name: '素材_010.mp4', bookId: 'L0004', bookName: '三体', drama: 'Three-Body', lang: '英文', cost: 4200, doroi: 4.8, compliance: 93, oldCompliance: 90, created: '2026-05-06' },
+            { name: '素材_011.mp4', bookId: 'L0005', bookName: '庆余年', drama: '庆余年', lang: '中文', cost: 1500, doroi: 2.9, compliance: 82, oldCompliance: 76, created: '2026-05-12' },
+            { name: '素材_012.mp4', bookId: 'L0005', bookName: '庆余年', drama: 'Joy of Life', lang: '英文', cost: 1100, doroi: 2.1, compliance: 76, oldCompliance: 69, created: '2026-05-10' },
         ];
 
         function generatePreviewData() {
@@ -1629,6 +1639,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                         <td>$${d.cost.toLocaleString()}</td>
                         <td>${d.doroi}</td>
                         <td>${d.compliance}%</td>
+                        <td>${d.oldCompliance}%</td>
                         <td>${d.created}</td>
                     </tr>
                 `).join('');
@@ -1638,7 +1649,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                         <table class="material-preview-table">
                             <thead>
                                 <tr>
-                                    <th>素材名称</th><th>剧本ID</th><th>剧本名称</th><th>短剧</th><th>语言</th><th>消耗</th><th>DOROI</th><th>综合达标率</th><th>创建时间</th>
+                                    <th>素材名称</th><th>剧本ID</th><th>剧本名称</th><th>短剧</th><th>语言</th><th>消耗</th><th>DOROI</th><th>综合达标率</th><th>老达标率</th><th>创建时间</th>
                                 </tr>
                             </thead>
                             <tbody>${rows}</tbody>
