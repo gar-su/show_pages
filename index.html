@@ -827,7 +827,7 @@
                         <div class="condition-group" id="endConditionGroup">
                             <div class="condition-row">
                                 <select class="condition-select" disabled>
-                                    <option value="series_count">单账户在投总系列数</option>
+                                    <option value="series_count">单账户单短剧在投总系列数</option>
                                 </select>
                                 <select class="condition-operator" disabled>
                                     <option value=">=">>=</option>
@@ -850,6 +850,18 @@
                         </div>
                         <!-- 隐藏添加条件按钮 -->
                         <div class="add-time-btn" id="addEndCondition" style="display: none;">+ 添加条件</div>
+                    </div>
+                </div>
+
+                <!-- 单轮单短剧计划创建上限 -->
+                <div class="form-item">
+                    <label style="width:180px;">
+                        <span class="required">*</span>单轮单短剧计划创建上限
+                    </label>
+                    <div class="form-control">
+                        <div class="input-group">
+                            <input type="number" class="input-text" id="campaignLimit" min="1" max="30" value="1" style="width:130px;">
+                        </div>
                     </div>
                 </div>
 
@@ -1542,6 +1554,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                     { metric: 'series_count', name: '单账户在投总系列数', operator: '>=', value: document.querySelectorAll('#endConditionGroup .condition-input')[0].value },
                     { metric: 'account_count', name: '账户数', operator: '>=', value: document.querySelectorAll('#endConditionGroup .condition-input')[1].value }
                 ],
+                campaignLimit: parseInt(document.getElementById('campaignLimit').value),
                 account: {
                     package: document.getElementById('accountPackage').value,
                     targetingPackage: selectedTargetingPackage
@@ -1572,6 +1585,7 @@ const statRangeItem = document.getElementById('statRangeItem');
             if (formData.dramas.length === 0) { alert('请选择短剧'); return; }
             if (!formData.endConditions[0].value || !formData.endConditions[1].value) { alert('请填写结束运行条件的数值'); return; }
             if (!formData.account.package) { alert('请选择投放账户'); return; }
+            if (!formData.campaignLimit || formData.campaignLimit < 1 || formData.campaignLimit > 30) { alert('请填写单轮单短剧计划创建上限（1-30）'); return; }
 
             console.log('提交数据：', formData);
             alert('任务创建成功！');
