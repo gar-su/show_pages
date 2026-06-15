@@ -962,6 +962,8 @@
                                 <select class="condition-select material-condition-metric">
                                     <option value="cost">消耗</option>
                                     <option value="doroi">DOROI</option>
+                                    <option value="d0_ad_roi">D0广告ROI</option>
+                                    <option value="d0_iaa">D0 IAA</option>
                                     <option value="compliance">综合达标率</option>
                                     <option value="old_compliance">老达标率</option>
                                 </select>
@@ -1008,6 +1010,8 @@
                             <button type="button" class="btn-option active" data-metric="compliance">综合达标率</button>
                             <button type="button" class="btn-option" data-metric="cost">消耗</button>
                             <button type="button" class="btn-option" data-metric="doroi">D0ROI</button>
+                            <button type="button" class="btn-option" data-metric="d0_ad_roi">D0广告ROI</button>
+                            <button type="button" class="btn-option" data-metric="d0_iaa">D0 IAA</button>
                             <button type="button" class="btn-option" data-metric="old_compliance">老达标率</button>
                         </div>
                     </div>
@@ -1453,7 +1457,7 @@ const statRangeItem = document.getElementById('statRangeItem');
 
         const togglePercentSuffix = (row) => {
             const metric = row.querySelector('.material-condition-metric').value;
-            const showPercent = metric === 'doroi' || metric === 'compliance' || metric === 'old_compliance';
+            const showPercent = metric === 'doroi' || metric === 'compliance' || metric === 'old_compliance' || metric === 'd0_ad_roi';
             row.querySelectorAll('.condition-input-suffix').forEach(s => s.style.display = showPercent ? 'inline' : 'none');
         };
 
@@ -1486,6 +1490,8 @@ const statRangeItem = document.getElementById('statRangeItem');
                 <select class="condition-select material-condition-metric">
                     <option value="cost">消耗</option>
                     <option value="doroi">DOROI</option>
+                    <option value="d0_ad_roi">D0广告ROI</option>
+                    <option value="d0_iaa">D0 IAA</option>
                     <option value="compliance">综合达标率</option>
                     <option value="old_compliance">老达标率</option>
                 </select>
@@ -1642,18 +1648,18 @@ const statRangeItem = document.getElementById('statRangeItem');
 
         // ==================== 素材预览功能 ====================
         const mockMaterialData = [
-            { name: '素材_001.mp4', bookId: 'L0001', bookName: '繁花', drama: '繁花', lang: '中文', cost: 1234, doroi: 2.3, compliance: 85, oldCompliance: 78, created: '2026-05-12', businessType: '免费', media: 'Meta' },
-            { name: '素材_002.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Blooming', lang: '英文', cost: 856, doroi: 1.8, compliance: 72, oldCompliance: 65, created: '2026-05-11', businessType: '付费', media: 'TikTok' },
-            { name: '素材_003.mp4', bookId: 'L0001', bookName: '繁花', drama: 'บุษบา', lang: '泰文', cost: 2100, doroi: 3.1, compliance: 91, oldCompliance: 88, created: '2026-05-10', businessType: '免费', media: 'Meta' },
-            { name: '素材_004.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Mekar', lang: '马来文', cost: 450, doroi: 0.9, compliance: 58, oldCompliance: 42, created: '2026-05-13', businessType: '付费', media: 'Meta' },
-            { name: '素材_005.mp4', bookId: 'L0002', bookName: '狂飙', drama: '狂飙', lang: '中文', cost: 3200, doroi: 4.5, compliance: 95, oldCompliance: 91, created: '2026-05-09', businessType: '付费', media: 'TikTok' },
-            { name: '素材_006.mp4', bookId: 'L0002', bookName: '狂飙', drama: 'The Knockout', lang: '英文', cost: 1890, doroi: 2.7, compliance: 80, oldCompliance: 73, created: '2026-05-08', businessType: '免费', media: 'Meta' },
-            { name: '素材_007.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: '漫长的季节', lang: '中文', cost: 670, doroi: 1.5, compliance: 66, oldCompliance: 55, created: '2026-05-11', businessType: '免费', media: 'TikTok' },
-            { name: '素材_008.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: 'The Long Season', lang: '英文', cost: 980, doroi: 2.0, compliance: 74, oldCompliance: 68, created: '2026-05-07', businessType: '付费', media: 'Meta' },
-            { name: '素材_009.mp4', bookId: 'L0004', bookName: '三体', drama: '三体', lang: '中文', cost: 5600, doroi: 5.2, compliance: 98, oldCompliance: 96, created: '2026-05-13', businessType: '付费', media: 'Meta' },
-            { name: '素材_010.mp4', bookId: 'L0004', bookName: '三体', drama: 'Three-Body', lang: '英文', cost: 4200, doroi: 4.8, compliance: 93, oldCompliance: 90, created: '2026-05-06', businessType: '免费', media: 'TikTok' },
-            { name: '素材_011.mp4', bookId: 'L0005', bookName: '庆余年', drama: '庆余年', lang: '中文', cost: 1500, doroi: 2.9, compliance: 82, oldCompliance: 76, created: '2026-05-12', businessType: '免费', media: 'Meta' },
-            { name: '素材_012.mp4', bookId: 'L0005', bookName: '庆余年', drama: 'Joy of Life', lang: '英文', cost: 1100, doroi: 2.1, compliance: 76, oldCompliance: 69, created: '2026-05-10', businessType: '付费', media: 'TikTok' },
+            { name: '素材_001.mp4', bookId: 'L0001', bookName: '繁花', drama: '繁花', lang: '中文', cost: 1234, doroi: 2.3, d0AdRoi: 1.8, d0Iaa: 456, compliance: 85, oldCompliance: 78, created: '2026-05-12', businessType: '免费', media: 'Meta' },
+            { name: '素材_002.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Blooming', lang: '英文', cost: 856, doroi: 1.8, d0AdRoi: 1.2, d0Iaa: 320, compliance: 72, oldCompliance: 65, created: '2026-05-11', businessType: '付费', media: 'TikTok' },
+            { name: '素材_003.mp4', bookId: 'L0001', bookName: '繁花', drama: 'บุษบา', lang: '泰文', cost: 2100, doroi: 3.1, d0AdRoi: 2.5, d0Iaa: 780, compliance: 91, oldCompliance: 88, created: '2026-05-10', businessType: '免费', media: 'Meta' },
+            { name: '素材_004.mp4', bookId: 'L0001', bookName: '繁花', drama: 'Mekar', lang: '马来文', cost: 450, doroi: 0.9, d0AdRoi: 0.6, d0Iaa: 180, compliance: 58, oldCompliance: 42, created: '2026-05-13', businessType: '付费', media: 'Meta' },
+            { name: '素材_005.mp4', bookId: 'L0002', bookName: '狂飙', drama: '狂飙', lang: '中文', cost: 3200, doroi: 4.5, d0AdRoi: 3.8, d0Iaa: 1200, compliance: 95, oldCompliance: 91, created: '2026-05-09', businessType: '付费', media: 'TikTok' },
+            { name: '素材_006.mp4', bookId: 'L0002', bookName: '狂飙', drama: 'The Knockout', lang: '英文', cost: 1890, doroi: 2.7, d0AdRoi: 2.1, d0Iaa: 650, compliance: 80, oldCompliance: 73, created: '2026-05-08', businessType: '免费', media: 'Meta' },
+            { name: '素材_007.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: '漫长的季节', lang: '中文', cost: 670, doroi: 1.5, d0AdRoi: 1.0, d0Iaa: 240, compliance: 66, oldCompliance: 55, created: '2026-05-11', businessType: '免费', media: 'TikTok' },
+            { name: '素材_008.mp4', bookId: 'L0003', bookName: '漫长的季节', drama: 'The Long Season', lang: '英文', cost: 980, doroi: 2.0, d0AdRoi: 1.6, d0Iaa: 410, compliance: 74, oldCompliance: 68, created: '2026-05-07', businessType: '付费', media: 'Meta' },
+            { name: '素材_009.mp4', bookId: 'L0004', bookName: '三体', drama: '三体', lang: '中文', cost: 5600, doroi: 5.2, d0AdRoi: 4.5, d0Iaa: 2100, compliance: 98, oldCompliance: 96, created: '2026-05-13', businessType: '付费', media: 'Meta' },
+            { name: '素材_010.mp4', bookId: 'L0004', bookName: '三体', drama: 'Three-Body', lang: '英文', cost: 4200, doroi: 4.8, d0AdRoi: 4.0, d0Iaa: 1650, compliance: 93, oldCompliance: 90, created: '2026-05-06', businessType: '免费', media: 'TikTok' },
+            { name: '素材_011.mp4', bookId: 'L0005', bookName: '庆余年', drama: '庆余年', lang: '中文', cost: 1500, doroi: 2.9, d0AdRoi: 2.2, d0Iaa: 580, compliance: 82, oldCompliance: 76, created: '2026-05-12', businessType: '免费', media: 'Meta' },
+            { name: '素材_012.mp4', bookId: 'L0005', bookName: '庆余年', drama: 'Joy of Life', lang: '英文', cost: 1100, doroi: 2.1, d0AdRoi: 1.7, d0Iaa: 390, compliance: 76, oldCompliance: 69, created: '2026-05-10', businessType: '付费', media: 'TikTok' },
         ];
 
         function generatePreviewData() {
@@ -1702,6 +1708,8 @@ const statRangeItem = document.getElementById('statRangeItem');
                         <td>${d.media}</td>
                         <td>$${d.cost.toLocaleString()}</td>
                         <td>${d.doroi}</td>
+                        <td>${d.d0AdRoi}%</td>
+                        <td>$${d.d0Iaa.toLocaleString()}</td>
                         <td>${d.compliance}%</td>
                         <td>${d.oldCompliance}%</td>
                         <td>${d.created}</td>
@@ -1713,7 +1721,7 @@ const statRangeItem = document.getElementById('statRangeItem');
                         <table class="material-preview-table">
                             <thead>
                                 <tr>
-                                    <th>素材名称</th><th>剧本ID</th><th>剧本名称</th><th>短剧</th><th>语言</th><th>业务类型</th><th>媒体</th><th>消耗</th><th>DOROI</th><th>综合达标率</th><th>老达标率</th><th>创建时间</th>
+                                    <th>素材名称</th><th>剧本ID</th><th>剧本名称</th><th>短剧</th><th>语言</th><th>业务类型</th><th>媒体</th><th>消耗</th><th>DOROI</th><th>D0广告ROI</th><th>D0 IAA</th><th>综合达标率</th><th>老达标率</th><th>创建时间</th>
                                 </tr>
                             </thead>
                             <tbody>${rows}</tbody>
