@@ -724,15 +724,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
         <div class="form-control"><input type="text" class="input-text" id="apChannel" placeholder="请输入推广渠道"></div>
       </div>
       <div class="form-item">
-        <label><span class="required">*</span>渠道号</label>
-        <div class="form-control"><input type="text" class="input-text" id="apChannelNo" placeholder="请输入渠道号"></div>
-      </div>
-      <div class="form-item">
         <label><span class="required">*</span>投放策略</label>
         <div class="form-control"><div class="btn-group" id="apStrategy">
           <button type="button" class="btn-option active" data-strategy="直投">直投</button>
           <button type="button" class="btn-option" data-strategy="W2A">W2A</button>
+          <button type="button" class="btn-option" data-strategy="H5">H5</button>
         </div></div>
+      </div>
+      <div class="form-item">
+        <label><span class="required">*</span>渠道号</label>
+        <div class="form-control"><input type="text" class="input-text" id="apChannelNo" placeholder="请输入渠道号"></div>
       </div>
       <div class="form-item ap-w2a-field" style="display:none">
         <label><span class="required">*</span>行动号召<br><span style="font-size:12px;color:var(--text-secondary)">(落地页文案)</span></label>
@@ -971,11 +972,11 @@ function resetTaskForm(){
 // ==================== 账户包 ====================
 const mockAccountPackages = [
   {id:355,name:'账户包A-北美投放',bizType:'免费',channel:'通用默认渠道',channelNo:'CH001',strategy:'W2A',template:'回传模板_001',pixel:'像素_A001',created:'2026-05-12',updated:'2026-06-20'},
-  {id:356,name:'账户包B-东南亚投放',bizType:'付费',channel:'通用默认渠道',channelNo:'CH002',strategy:'直投',template:'回传模板_002',pixel:'像素_B002',created:'2026-05-15',updated:'2026-06-18'},
-  {id:357,name:'账户包C-欧洲投放',bizType:'免费',channel:'TikTok渠道',channelNo:'CH003',strategy:'W2A',template:'回传模板_003',pixel:'像素_C003',created:'2026-05-20',updated:'2026-06-22'},
+  {id:356,name:'账户包B-东南亚投放',bizType:'付费',channel:'通用默认渠道',channelNo:'CH002',strategy:'H5',template:'回传模板_002',pixel:'像素_B002',created:'2026-05-15',updated:'2026-06-18'},
+  {id:357,name:'账户包C-欧洲投放',bizType:'免费',channel:'TikTok渠道',channelNo:'CH003',strategy:'H5',template:'回传模板_003',pixel:'像素_C003',created:'2026-05-20',updated:'2026-06-22'},
   {id:358,name:'账户包D-日韩投放',bizType:'付费',channel:'Meta渠道',channelNo:'CH004',strategy:'直投',template:'回传模板_004',pixel:'像素_D004',created:'2026-06-01',updated:'2026-06-21'},
   {id:359,name:'账户包E-全球投放',bizType:'免费',channel:'通用默认渠道',channelNo:'CH005',strategy:'W2A',template:'回传模板_005',pixel:'像素_E005',created:'2026-06-05',updated:'2026-06-23'},
-  {id:360,name:'复制 - ja_JP_JP',bizType:'免费',channel:'通用默认渠道',channelNo:'CH006',strategy:'W2A',template:'回传模板_JP',pixel:'像素_JP006',created:'2026-06-10',updated:'2026-06-23'},
+  {id:360,name:'复制 - ja_JP_JP',bizType:'免费',channel:'通用默认渠道',channelNo:'CH006',strategy:'H5',template:'回传模板_JP',pixel:'像素_JP006',created:'2026-06-10',updated:'2026-06-23'},
   {id:361,name:'账户包F-测试专用',bizType:'收费',channel:'测试渠道',channelNo:'CH007',strategy:'直投',template:'回传模板_TEST',pixel:'像素_TEST',created:'2026-06-12',updated:'2026-06-24'},
   {id:362,name:'账户包G-南美投放',bizType:'付费',channel:'Meta渠道',channelNo:'CH008',strategy:'直投',template:'回传模板_007',pixel:'像素_G007',created:'2026-06-15',updated:'2026-06-24'},
 ];
@@ -1219,7 +1220,7 @@ function submitAccountPackage(){
 }
 document.getElementById('apName').addEventListener('input',function(){document.getElementById('apNameCount').textContent=this.value.length+' / 50'});
 document.querySelectorAll('#apBizType .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apBizType .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active')}));
-document.querySelectorAll('#apStrategy .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apStrategy .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');const isW2A=this.dataset.strategy==='W2A';document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isW2A?'flex':'none')}));
+document.querySelectorAll('#apStrategy .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apStrategy .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');const showFields=this.dataset.strategy!=='直投';document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=showFields?'flex':'none')}));
 document.getElementById('apCta').addEventListener('input',function(){document.getElementById('apCtaCount').textContent=this.value.length+' / 26'});
 
 // ==================== 定向包管理 ====================
