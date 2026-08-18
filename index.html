@@ -747,6 +747,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
         <label><span class="required">*</span>渠道号</label>
         <div class="form-control"><input type="text" class="input-text" id="apChannelNo" placeholder="请输入渠道号"></div>
       </div>
+      <div class="form-item ap-app-field" style="display:flex">
+        <label><span class="required">*</span>选择应用</label>
+        <div class="form-control"><select class="condition-select" id="apSelectApp" style="min-width:200px">
+          <option value="netshort">Netshort</option>
+        </select></div>
+      </div>
+      <div class="form-item ap-app-field" style="display:flex">
+        <label>延迟深度链接</label>
+        <div class="form-control"><div class="btn-group" id="apDelayedDeepLink">
+          <button type="button" class="btn-option active" data-value="0">关闭</button>
+          <button type="button" class="btn-option" data-value="1">开启</button>
+        </div></div>
+      </div>
       <div class="form-item ap-w2a-field" style="display:none">
         <label><span class="required">*</span>行动号召<br><span style="font-size:12px;color:var(--text-secondary)">(落地页文案)</span></label>
         <div class="form-control">
@@ -1181,6 +1194,9 @@ const apAccountBody=document.getElementById('apAccountTableBody'),apAccountPagin
 
 function openAccountPackageDrawer(){
   document.getElementById('accountPackageDrawer').style.display='flex';
+  const isDeli=document.querySelector('#apStrategy .btn-option.active').dataset.strategy==='直投';
+  document.querySelectorAll('.ap-app-field').forEach(el=>el.style.display=isDeli?'flex':'none');
+  document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isDeli?'none':'flex');
   apSelectedAccounts=[];apCurrentPage=1;apFilteredData=mockAllAccounts;
   document.getElementById('apAccountSearch').value='';
   updateAccountPage();
@@ -1232,8 +1248,9 @@ function submitAccountPackage(){
 }
 document.getElementById('apName').addEventListener('input',function(){document.getElementById('apNameCount').textContent=this.value.length+' / 50'});
 document.querySelectorAll('#apBizType .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apBizType .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active')}));
-document.querySelectorAll('#apStrategy .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apStrategy .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');const showFields=this.dataset.strategy!=='直投';document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=showFields?'flex':'none')}));
+document.querySelectorAll('#apStrategy .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apStrategy .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');const isDeli=this.dataset.strategy==='直投';document.querySelectorAll('.ap-app-field').forEach(el=>el.style.display=isDeli?'flex':'none');document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isDeli?'none':'flex')}));
 document.getElementById('apCta').addEventListener('input',function(){document.getElementById('apCtaCount').textContent=this.value.length+' / 26'});
+document.querySelectorAll('#apDelayedDeepLink .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apDelayedDeepLink .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active')}));
 
 // ==================== 定向包管理 ====================
 const mockTargetingPackageData=[
