@@ -544,8 +544,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
       </div>
 
       <div class="form-item">
-        <label style="width:180px"><span class="required">*</span>单轮单短剧计划创建上限</label>
-        <div class="form-control"><input type="number" class="input-text" id="campaignLimit" min="1" max="30" value="1" style="width:130px"></div>
+        <label style="width:180px">单轮单短剧计划创建上限<i class="tip-icon">?<span class="tip-box">兜底上限：本轮单个短剧最多创建几个系列。不填=系列数仅由素材预算（单轮投放次数 × 累计投放次数）与素材池共同决定，不额外封顶；填 N=本轮该短剧最多建 N 个系列。</span></i></label>
+        <div class="form-control"><input type="number" class="input-text" id="campaignLimit" min="1" step="1" placeholder="不填=不限" style="width:130px"></div>
+      </div>
+
+      <div class="form-item">
+        <label style="width:180px">每轮账户数<i class="tip-icon">?<span class="tip-box">风控开关：本轮最多允许几个账户参与建系列，控制单轮起量规模，避免素材量大时一批账户同时瞬间起量。它不决定素材分给谁——素材去向由素材自身预算（单轮投放次数 × 累计投放次数）分散决定。清空=使用账户包全部账户。</span></i></label>
+        <div class="form-control"><div class="input-group"><input type="number" class="input-text" id="accountCount" min="1" step="1" value="5" placeholder="默认5" style="width:110px"><span class="tip-text" id="accountCountHint">请先选择账户包</span></div></div>
       </div>
 
       <div class="form-group-title">素材配置</div>
@@ -656,19 +661,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
       <!-- /filterModeFields -->
 
       <div class="form-item">
-        <label>素材重复次数</label>
-        <div class="form-control"><div class="btn-group" id="repeatCountType">
-          <button type="button" class="btn-option active" data-type="unlimit">不限</button>
-          <button type="button" class="btn-option" data-type="custom">自定义</button>
+        <label>素材单轮投放次数</label>
+        <div class="form-control"><div class="btn-group" id="singleRoundRepeatType">
+          <button type="button" class="btn-option" data-type="unlimit">不限</button>
+          <button type="button" class="btn-option active" data-type="custom">自定义</button>
         </div>
-        <div class="input-group" id="repeatCountInput" style="display:none"><input type="number" class="input-text" id="repeatCount" min="1" placeholder="请输入"><span class="tip-text">不填写默认30</span></div></div>
+        <div class="input-group" id="singleRoundRepeatInput"><input type="number" class="input-text" id="singleRoundRepeat" min="1" value="1" placeholder="请输入"><span class="tip-text">单轮最多进入几个系列（跨账户合计）</span></div></div>
       </div>
-      <div class="form-item" id="dedupItem">
-        <label style="white-space:nowrap">多轮执行不投重复素材</label>
-        <div class="form-control"><div class="btn-group" id="dedupAcrossRounds">
-          <button type="button" class="btn-option" data-value="0">关闭</button>
-          <button type="button" class="btn-option active" data-value="1">开启</button>
-        </div></div>
+      <div class="form-item">
+        <label>素材累计投放次数</label>
+        <div class="form-control"><div class="btn-group" id="totalRepeatType">
+          <button type="button" class="btn-option" data-type="unlimit">不限</button>
+          <button type="button" class="btn-option active" data-type="custom">自定义</button>
+        </div>
+        <div class="input-group" id="totalRepeatInput"><input type="number" class="input-text" id="totalRepeatCount" min="1" value="1" placeholder="请输入"><span class="tip-text">累计投满即退出（跨轮跨账户）</span></div></div>
       </div>
       <div class="form-item">
         <label>广告数</label>
@@ -1000,14 +1006,14 @@ function resetTaskForm(){
 
 // ==================== 账户包 ====================
 const mockAccountPackages = [
-  {id:355,name:'账户包A-北美投放',bizType:'免费',channel:'通用默认渠道',channelNo:'CH001',strategy:'W2A',template:'回传模板_001',pixel:'像素_A001',created:'2026-05-12',updated:'2026-06-20'},
-  {id:356,name:'账户包B-东南亚投放',bizType:'付费',channel:'通用默认渠道',channelNo:'CH002',strategy:'H5',template:'回传模板_002',pixel:'像素_B002',created:'2026-05-15',updated:'2026-06-18'},
-  {id:357,name:'账户包C-欧洲投放',bizType:'免费',channel:'TikTok渠道',channelNo:'CH003',strategy:'H5',template:'回传模板_003',pixel:'像素_C003',created:'2026-05-20',updated:'2026-06-22'},
-  {id:358,name:'账户包D-日韩投放',bizType:'付费',channel:'Meta渠道',channelNo:'CH004',strategy:'直投',template:'回传模板_004',pixel:'像素_D004',created:'2026-06-01',updated:'2026-06-21'},
-  {id:359,name:'账户包E-全球投放',bizType:'免费',channel:'通用默认渠道',channelNo:'CH005',strategy:'W2A',template:'回传模板_005',pixel:'像素_E005',created:'2026-06-05',updated:'2026-06-23'},
-  {id:360,name:'复制 - ja_JP_JP',bizType:'免费',channel:'通用默认渠道',channelNo:'CH006',strategy:'H5',template:'回传模板_JP',pixel:'像素_JP006',created:'2026-06-10',updated:'2026-06-23'},
-  {id:361,name:'账户包F-测试专用',bizType:'收费',channel:'测试渠道',channelNo:'CH007',strategy:'直投',template:'回传模板_TEST',pixel:'像素_TEST',created:'2026-06-12',updated:'2026-06-24'},
-  {id:362,name:'账户包G-南美投放',bizType:'付费',channel:'Meta渠道',channelNo:'CH008',strategy:'直投',template:'回传模板_007',pixel:'像素_G007',created:'2026-06-15',updated:'2026-06-24'},
+  {id:355,name:'账户包A-北美投放',bizType:'免费',channel:'通用默认渠道',channelNo:'CH001',strategy:'W2A',template:'回传模板_001',pixel:'像素_A001',accounts:['999948985558804','999927288829472','999832261935300','998612658582875'],created:'2026-05-12',updated:'2026-06-20'},
+  {id:356,name:'账户包B-东南亚投放',bizType:'付费',channel:'通用默认渠道',channelNo:'CH002',strategy:'H5',template:'回传模板_002',pixel:'像素_B002',accounts:['998338662054244','998285326106037','997512479903737'],created:'2026-05-15',updated:'2026-06-18'},
+  {id:357,name:'账户包C-欧洲投放',bizType:'免费',channel:'TikTok渠道',channelNo:'CH003',strategy:'H5',template:'回传模板_003',pixel:'像素_C003',accounts:['997371009081920','997246898942846'],created:'2026-05-20',updated:'2026-06-22'},
+  {id:358,name:'账户包D-日韩投放',bizType:'付费',channel:'Meta渠道',channelNo:'CH004',strategy:'直投',template:'回传模板_004',pixel:'像素_D004',accounts:['997100762992434','996184899424613','995957119857890'],created:'2026-06-01',updated:'2026-06-21'},
+  {id:359,name:'账户包E-全球投放',bizType:'免费',channel:'通用默认渠道',channelNo:'CH005',strategy:'W2A',template:'回传模板_005',pixel:'像素_E005',accounts:['995511652893546','995374655843914','994312602786428'],created:'2026-06-05',updated:'2026-06-23'},
+  {id:360,name:'复制 - ja_JP_JP',bizType:'免费',channel:'通用默认渠道',channelNo:'CH006',strategy:'H5',template:'回传模板_JP',pixel:'像素_JP006',accounts:['999948985558804'],created:'2026-06-10',updated:'2026-06-23'},
+  {id:361,name:'账户包F-测试专用',bizType:'收费',channel:'测试渠道',channelNo:'CH007',strategy:'直投',template:'回传模板_TEST',pixel:'像素_TEST',accounts:['998612658582875','999832261935300'],created:'2026-06-12',updated:'2026-06-24'},
+  {id:362,name:'账户包G-南美投放',bizType:'付费',channel:'Meta渠道',channelNo:'CH008',strategy:'直投',template:'回传模板_007',pixel:'像素_G007',accounts:['997512479903737','997246898942846','994312602786428'],created:'2026-06-15',updated:'2026-06-24'},
 ];
 const mockTargetingPackages = [
   {id:'tp1',name:'兴趣标签定向',gender:'不限',ageGroups:['18-24','25-34'],locations:'美国, 加拿大, 英国'},
@@ -1019,7 +1025,16 @@ let dramaTargetingMap = new Map();
 (function(){
   const sel=document.getElementById('accountPackage');
   mockAccountPackages.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;sel.appendChild(o)});
+  sel.addEventListener('change',function(){
+    document.getElementById('accountCountHint').textContent=getPackageAccounts().length>0?('包内共 '+getPackageAccounts().length+' 个账户，默认每轮参与 5 个（可改，清空=全部）'):'请先选择账户包';
+  });
 })();
+function getPackageAccounts(){
+  const pkgName=document.getElementById('accountPackage').value;
+  const pkg=mockAccountPackages.find(p=>p.name===pkgName);
+  if(!pkg||!Array.isArray(pkg.accounts))return [];
+  return mockAllAccounts.filter(a=>pkg.accounts.includes(a.id));
+}
 function tpDesc(tp){
   const parts=[tp.gender!=='不限'?tp.gender:'',tp.ageGroups.length?tp.ageGroups.join(',')+'岁':'',tp.locations||'不限地区'].filter(Boolean);
   return parts.join(' | ')||'全量定向';
@@ -1422,10 +1437,11 @@ document.querySelectorAll('#materialFilterType .btn-option').forEach(btn=>{btn.a
 function bindBtnGroup(sel){
   document.querySelectorAll(sel+' .btn-option').forEach(btn=>{btn.addEventListener('click',function(){document.querySelectorAll(sel+' .btn-option').forEach(b=>b.classList.remove('active'));this.classList.add('active');
     if(sel==='#materialCountType')document.getElementById('materialCountInput').style.display=this.dataset.type==='custom'?'flex':'none';
-    if(sel==='#repeatCountType')document.getElementById('repeatCountInput').style.display=this.dataset.type==='custom'?'flex':'none';
+    if(sel==='#singleRoundRepeatType')document.getElementById('singleRoundRepeatInput').style.display=this.dataset.type==='custom'?'flex':'none';
+    if(sel==='#totalRepeatType')document.getElementById('totalRepeatInput').style.display=this.dataset.type==='custom'?'flex':'none';
     resetMaterialPreview()})});
 }
-['#materialCreateTime','#businessTypeBtns','#mediaFilterBtns','#statRangeBtns','#sortMetricBtns','#materialCountType','#repeatCountType','#dedupAcrossRounds'].forEach(bindBtnGroup);
+['#materialCreateTime','#businessTypeBtns','#mediaFilterBtns','#statRangeBtns','#sortMetricBtns','#materialCountType','#singleRoundRepeatType','#totalRepeatType'].forEach(bindBtnGroup);
 
 // ==================== 素材选择方式切换 ====================
 document.querySelectorAll('#materialModeBtns .btn-option').forEach(btn=>{btn.addEventListener('click',function(){
@@ -1605,12 +1621,17 @@ document.getElementById('autoTaskForm').addEventListener('submit',function(e){e.
   const accountPkg=document.getElementById('accountPackage').value,cl=document.getElementById('campaignLimit').value;
   if(!taskName){alert('请输入任务名称');return}if(!executeFrequency){alert('请输入执行频率');return}
   if(dramas.length===0){alert('请选择短剧');return}if(dramas.some(d=>d.targetingPackages.length===0)){alert('请为每个短剧分配至少一个定向包');return}if(!ev1||!ev2){alert('请填写结束运行条件的数值');return}
-  if(!accountPkg){alert('请选择投放账户');return}if(!cl||+cl<1||+cl>30){alert('请填写计划创建上限（1-30）');return}
+  if(!accountPkg){alert('请选择投放账户');return}if(cl&&+cl<1){alert('计划创建上限不能小于1（不填=不限）');return}
+  const accountCount=document.getElementById('accountCount').value;
+  const pkgAccounts=getPackageAccounts();
+  if(accountCount&&+accountCount<1){alert('每轮账户数不能小于1');return}
+  if(pkgAccounts.length===0){alert('当前账户包内无账户');return}
+  if(accountCount&&+accountCount>pkgAccounts.length){alert('每轮账户数不能超过包内账户数（'+pkgAccounts.length+'）');return}
   const formData={taskName,status:document.querySelector('.btn-option[data-status].active').dataset.status,
     timeRanges:Array.from(document.querySelectorAll('#timeRangeContainer .time-range-group')).map(r=>({start:r.querySelectorAll('.time-input')[0].value,end:r.querySelectorAll('.time-input')[1].value})),
-    executeFrequency,dramas,endConditions:[{metric:'series_count',operator:'>=',value:ev1},{metric:'account_count',operator:'>=',value:ev2}],campaignLimit:+cl,
-    account:{package:accountPkg},
-    material:materialMode==='specify'?{mode:'specify',items:confirmedMaterials.map(m=>m.id),repeatCount:document.querySelector('#repeatCountType .btn-option.active').dataset.type==='custom'?(document.getElementById('repeatCount').value||30):'unlimit',dedupAcrossRounds:document.querySelector('#dedupAcrossRounds .btn-option.active').dataset.value==='1',adCount:document.getElementById('adCount').value||30}:{mode:'filter',createTime:document.querySelector('#materialCreateTime .btn-option.active').dataset.day,
+    executeFrequency,dramas,endConditions:[{metric:'series_count',operator:'>=',value:ev1},{metric:'account_count',operator:'>=',value:ev2}],campaignLimit:cl?+cl:0,
+    account:{package:accountPkg,accountCount:+accountCount},
+    material:materialMode==='specify'?{mode:'specify',items:confirmedMaterials.map(m=>m.id),singleRoundRepeat:document.querySelector('#singleRoundRepeatType .btn-option.active').dataset.type==='custom'?(document.getElementById('singleRoundRepeat').value||1):'unlimit',totalRepeatCount:document.querySelector('#totalRepeatType .btn-option.active').dataset.type==='custom'?(document.getElementById('totalRepeatCount').value||1):'unlimit',adCount:document.getElementById('adCount').value||30}:{mode:'filter',createTime:document.querySelector('#materialCreateTime .btn-option.active').dataset.day,
       filterType:document.querySelector('#materialFilterType .btn-option.active').dataset.type,
       businessType:document.querySelector('#businessTypeBtns .btn-option.active').dataset.type,
       media:document.querySelector('#mediaFilterBtns .btn-option.active').dataset.type,
@@ -1618,8 +1639,8 @@ document.getElementById('autoTaskForm').addEventListener('submit',function(e){e.
       sortMetric:document.querySelector('#sortMetricBtns .btn-option.active').dataset.metric,
       materialCount:document.querySelector('#materialCountType .btn-option.active').dataset.type==='custom'?document.getElementById('materialCount').value:'unlimit',
       conditions:Array.from(document.querySelectorAll('#materialConditionGroup .condition-row')).map(r=>{const m=r.querySelector('.material-condition-metric').value,o=r.querySelector('.material-condition-operator').value,ins=r.querySelectorAll('.condition-input');return o==='between'?{metric:m,operator:o,min:ins[0].value,max:ins[1].value}:{metric:m,operator:o,value:ins[0].value}}),
-      repeatCount:document.querySelector('#repeatCountType .btn-option.active').dataset.type==='custom'?(document.getElementById('repeatCount').value||30):'unlimit',
-      dedupAcrossRounds:document.querySelector('#dedupAcrossRounds .btn-option.active').dataset.value==='1',
+      singleRoundRepeat:document.querySelector('#singleRoundRepeatType .btn-option.active').dataset.type==='custom'?(document.getElementById('singleRoundRepeat').value||1):'unlimit',
+      totalRepeatCount:document.querySelector('#totalRepeatType .btn-option.active').dataset.type==='custom'?(document.getElementById('totalRepeatCount').value||1):'unlimit',
       adCount:document.getElementById('adCount').value||30}};
   console.log('提交数据：',formData);alert('任务创建成功！');closeTaskModal()});
 
