@@ -744,6 +744,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
         </div></div>
       </div>
       <div class="form-item">
+        <label><span class="required">*</span>回传模板</label>
+        <div class="form-control"><select class="condition-select" id="apCallbackTemplate" style="min-width:320px"><option value="">请选择回传模板</option></select></div>
+      </div>
+      <div class="form-item">
         <label><span class="required">*</span>渠道号</label>
         <div class="form-control"><input type="text" class="input-text" id="apChannelNo" placeholder="请输入渠道号"></div>
       </div>
@@ -1192,11 +1196,52 @@ const mockAllAccounts=[
 let apSelectedAccounts=[],apCurrentPage=1,apFilteredData=[],apPageSize=8;
 const apAccountBody=document.getElementById('apAccountTableBody'),apAccountPagination=document.getElementById('apAccountPagination');
 
+// ==================== 回传模板（按投放策略×业务类型筛选） ====================
+const mockCallbackPlans=[
+  {id:'2079052866169409538',name:'FB-W2A-全回传策略',strategy:1,businessType:1},
+  {id:'2079055708355629058',name:'FB-W2A-订阅全回传购物最小金额扣2',strategy:1,businessType:1},
+  {id:'2079055205265641473',name:'FB-W2A-IOS扣10安卓扣5',strategy:1,businessType:1},
+  {id:'2079054410981904385',name:'FB-W2A-按最小金额10扣量',strategy:1,businessType:1},
+  {id:'2079054184690814978',name:'FB-W2A-按最小金额8扣量',strategy:1,businessType:1},
+  {id:'2079053986119880706',name:'FB-W2A-按最小金额5扣量',strategy:1,businessType:1},
+  {id:'2079053583475085314',name:'FB-W2A-按最小金额2扣量',strategy:1,businessType:1},
+  {id:'2080578120923238402',name:'FB-新回用户分层回传-实验',strategy:1,businessType:1},
+  {id:'2086374391809613825',name:'Meta-W2A-IAP美国专用',strategy:1,businessType:1},
+  {id:'2075544769932226561',name:'NS包FB-新像素实验',strategy:1,businessType:2},
+  {id:'2000879883257393154',name:'Meta-W2A-N解N实验专用',strategy:1,businessType:2},
+  {id:'2021166240846245890',name:'Meta-W2A-扣量实验专用',strategy:1,businessType:2},
+  {id:'2057784956469907457',name:'meta-W2A免费扣量V1.0.0',strategy:1,businessType:2},
+  {id:'2059844738421194754',name:'Meta-W2A-N解实验(英语)',strategy:1,businessType:2},
+  {id:'2059845228701777921',name:'Meta-W2A-N解实验（西班牙语）',strategy:1,businessType:2},
+  {id:'2059845495589531649',name:'Meta-W2A-N解实验（葡萄牙语）',strategy:1,businessType:2},
+  {id:'2059845731909206018',name:'Meta-W2A-N解实验 (印尼语)',strategy:1,businessType:2},
+  {id:'2059845957394984962',name:'Meta-W2A-N解实验 (泰语)',strategy:1,businessType:2},
+  {id:'2059846223536160770',name:'Meta-W2A-N解实验 (印地语)',strategy:1,businessType:2},
+  {id:'2059846428344025089',name:'Meta-W2A-N解实验 (阿拉伯语)',strategy:1,businessType:2},
+  {id:'2079053246685057025',name:'FB-直投-全回传策略',strategy:2,businessType:1},
+  {id:'2034582995779715074',name:'Meta-直投-扣量实验专用',strategy:2,businessType:2},
+  {id:'2047700585771171842',name:'Meta-直投-IAA扣量V1.0.0',strategy:2,businessType:2},
+  {id:'2053721671201718274',name:'Meta-直投- IAA扣量V1.0.1',strategy:2,businessType:2},
+  {id:'2055141485933101057',name:'NS包FB-直投免费广告解锁V1.0.0',strategy:2,businessType:2},
+  {id:'2066837466278182914',name:'NS包FB-直投长留实验V1.0.0',strategy:2,businessType:2},
+  {id:'2080641053732810754',name:'meta-H5-默认全回传',strategy:4,businessType:1},
+];
+function reloadApCallbackTemplate(){
+  const strategy={直投:2,W2A:1,H5:4}[document.querySelector('#apStrategy .btn-option.active').dataset.strategy];
+  const bizType=document.querySelector('#apBizType .btn-option.active').dataset.type==='付费'?2:1;
+  const plans=mockCallbackPlans.filter(p=>p.strategy===strategy&&p.businessType===bizType);
+  const sel=document.getElementById('apCallbackTemplate');
+  sel.innerHTML='<option value="">请选择回传模板</option>'+plans.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  if(!plans.some(p=>p.id===sel.value))sel.value='';
+}
+reloadApCallbackTemplate();
+
 function openAccountPackageDrawer(){
   document.getElementById('accountPackageDrawer').style.display='flex';
   const isDeli=document.querySelector('#apStrategy .btn-option.active').dataset.strategy==='直投';
   document.querySelectorAll('.ap-app-field').forEach(el=>el.style.display=isDeli?'flex':'none');
   document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isDeli?'none':'flex');
+  reloadApCallbackTemplate();
   apSelectedAccounts=[];apCurrentPage=1;apFilteredData=mockAllAccounts;
   document.getElementById('apAccountSearch').value='';
   updateAccountPage();
@@ -1243,12 +1288,13 @@ function submitAccountPackage(){
   const name=document.getElementById('apName').value.trim();
   if(!name){alert('请输入账号包名称');return}
   if(!apSelectedAccounts.length){alert('请选择账户');return}
+  if(!document.getElementById('apCallbackTemplate').value){alert('请选择回传模板');return}
   alert('账户包创建成功！');
   closeAccountPackageDrawer();
 }
 document.getElementById('apName').addEventListener('input',function(){document.getElementById('apNameCount').textContent=this.value.length+' / 50'});
-document.querySelectorAll('#apBizType .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apBizType .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active')}));
-document.querySelectorAll('#apStrategy .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apStrategy .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');const isDeli=this.dataset.strategy==='直投';document.querySelectorAll('.ap-app-field').forEach(el=>el.style.display=isDeli?'flex':'none');document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isDeli?'none':'flex')}));
+document.querySelectorAll('#apBizType .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apBizType .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');reloadApCallbackTemplate()}));
+document.querySelectorAll('#apStrategy .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apStrategy .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');const isDeli=this.dataset.strategy==='直投';document.querySelectorAll('.ap-app-field').forEach(el=>el.style.display=isDeli?'flex':'none');document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isDeli?'none':'flex');reloadApCallbackTemplate()}));
 document.getElementById('apCta').addEventListener('input',function(){document.getElementById('apCtaCount').textContent=this.value.length+' / 26'});
 document.querySelectorAll('#apDelayedDeepLink .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apDelayedDeepLink .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active')}));
 
