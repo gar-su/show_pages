@@ -178,6 +178,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
 .drama-targeting-tag .remove-drama-targeting:hover{opacity:1}
 .drama-targeting-add{color:var(--primary);font-size:12px;cursor:pointer;white-space:nowrap;user-select:none}
 .drama-targeting-add:hover{color:var(--primary-light)}
+.drama-schedule-row{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--text-secondary)}
+.drama-schedule-row .drama-schedule-label{white-space:nowrap}
 /* 定向包卡片列表 */
 .targeting-list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;cursor:pointer;transition:all .15s}
 .targeting-list-item:hover{border-color:var(--primary);background:rgba(64,128,255,.04)}
@@ -521,6 +523,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
               <a href="#" class="add-time-btn" onclick="clearAllTargeting();return false" style="margin-left:8px;font-size:13px;color:#ff4d4f">清空定向包</a>
               <a href="#" class="add-time-btn" onclick="clearAllDramas();return false" style="margin-left:8px;font-size:13px;color:#ff4d4f">清空短剧</a>
             </div>
+            <div style="color:#909399;font-size:13px;margin-bottom:8px">已选预上线短剧时，该短剧排期必填；已上线短剧留空=立即投放；时间按东八区填写</div>
             <div id="selectedDramasList"></div>
           </div>
         </div></div>
@@ -997,6 +1000,8 @@ function resetTaskForm(){
   document.getElementById('autoTaskForm').reset();
   document.getElementById('taskNameCount').textContent='0 / 50';
   dramaTargetingMap.clear();
+  dramaStatusMap.clear();
+  dramaScheduleMap.clear();
   document.getElementById('selectedDramasArea').style.display='none';
   document.getElementById('dramaSearchResult').innerHTML='<div class="drama-placeholder">请输入搜索条件进行搜索</div>';
   closeMaterialPreview();
@@ -1022,6 +1027,8 @@ const mockTargetingPackages = [
   {id:'tp4',name:'广泛匹配',gender:'不限',ageGroups:['18-24','25-34','35-44','45-54','55+'],locations:''},
 ];
 let dramaTargetingMap = new Map();
+let dramaStatusMap = new Map();
+let dramaScheduleMap = new Map();
 (function(){
   const sel=document.getElementById('accountPackage');
   mockAccountPackages.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;sel.appendChild(o)});
@@ -1052,6 +1059,11 @@ function renderDramaRow(dramaKey){
       ${none}${tags}
       <span class="drama-targeting-add" data-key="${dramaKey.replace(/"/g,'&quot;')}" onclick="openTargetingDrawer(this)">+ 选择定向包</span>
     </div>
+    <div class="drama-schedule-row">
+      <span class="drama-schedule-label">排期（东八区）</span>
+      <input type="datetime-local" class="input-text drama-schedule-input" data-key="${dramaKey.replace(/"/g,'&quot;')}" value="${dramaScheduleMap.get(dramaKey)||''}" style="width:210px;height:28px">
+      <span>留空=立即投放</span>
+    </div>
   </div>`;
 }
 function renderAllDramaRows(){
@@ -1063,6 +1075,8 @@ function clearAllDramas(){
   if(!dramaTargetingMap.size)return;
   if(!confirm('确定清空全部短剧？'))return;
   dramaTargetingMap.clear();
+  dramaStatusMap.clear();
+  dramaScheduleMap.clear();
   renderAllDramaRows();
   resetMaterialPreview();
 }
@@ -1342,6 +1356,24 @@ function renderTargetingPackages(p=1){
   renderPagination('targetingPackagePagination',mockTargetingPackageData.length,10,p=>renderTargetingPackages(p));
 }
 
+const mockDramaLib=[
+  {playbookId:'L0001',playbookName:'繁花',name:'繁花',lang:'中文',status:'已上线'},
+  {playbookId:'L0001',playbookName:'繁花',name:'Blooming',lang:'英文',status:'已上线'},
+  {playbookId:'L0001',playbookName:'繁花',name:'บุษบา',lang:'泰文',status:'已上线'},
+  {playbookId:'L0001',playbookName:'繁花',name:'Mekar',lang:'马来文',status:'预上线'},
+  {playbookId:'L0002',playbookName:'狂飙',name:'狂飙',lang:'中文',status:'已上线'},
+  {playbookId:'L0002',playbookName:'狂飙',name:'The Knockout',lang:'英文',status:'预上线'},
+  {playbookId:'L0003',playbookName:'漫长的季节',name:'漫长的季节',lang:'中文',status:'已上线'},
+  {playbookId:'L0003',playbookName:'漫长的季节',name:'The Long Season',lang:'英文',status:'预上线'},
+  {playbookId:'L0004',playbookName:'三体',name:'三体',lang:'中文',status:'已上线'},
+  {playbookId:'L0004',playbookName:'三体',name:'Three-Body',lang:'英文',status:'预上线'},
+  {playbookId:'L0005',playbookName:'庆余年',name:'庆余年',lang:'中文',status:'已上线'},
+  {playbookId:'L0006',playbookName:'琅琊榜',name:'琅琊榜',lang:'中文',status:'已上线'},
+  {playbookId:'L0007',playbookName:'知否',name:'知否',lang:'中文',status:'已上线'},
+  {playbookId:'L0008',playbookName:'甄嬛传',name:'甄嬛传',lang:'中文',status:'已上线'},
+  {playbookId:'L0009',playbookName:'待映剧',name:'待映剧',lang:'中文',status:'待上线'},
+];
+
 // ==================== 短剧搜索 ====================
 function switchDramaMode(mode){
   const isDrama=mode==='drama';
@@ -1358,21 +1390,26 @@ function searchDramas(){
   const playbookRaw=document.getElementById('playbookInput').value.trim();
   const lang=document.getElementById('dramaLangSelect').value;
   const result=document.getElementById('dramaSearchResult');
-  const mockNames=['繁花','狂飙','漫长的季节','三体','庆余年','琅琊榜','知否','甄嬛传'];
-  const langMap={zh:'中文',en:'英文',th:'泰文',ms:'马来文'},nameMap={zh:'繁花',en:'Blooming',th:'บุษบา',ms:'Mekar'};
+  const langMap={zh:'中文',en:'英文',th:'泰文',ms:'马来文'};
+  const cardFor=d=>`<div class="drama-result-card" data-status="${d.status}"><div class="drama-result-info"><div class="drama-result-item"><span class="label">剧本名称：</span><span class="value">${d.playbookName}</span></div><div class="drama-result-item"><span class="label">剧本ID：</span><span class="value">${d.playbookId}</span></div><div class="drama-result-item"><span class="label">短剧名称：</span><span class="value">${d.name}</span></div><div class="drama-result-item"><span class="label">语言：</span><span class="value">${d.lang}</span></div></div><div class="drama-result-actions"><button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button></div></div>`;
+  const eligible=dramas=>dramas.filter(d=>d.status!=='待上线');
+  const empty='<div class="drama-placeholder">未找到相关短剧</div>';
   if(mode==='drama'){
     if(!dramaNameRaw){alert('请输入短剧名称');return}
     const names=dramaNameRaw.split('\n').map(s=>s.trim()).filter(s=>s);
-    result.innerHTML=names.map((name,i)=>`<div class="drama-result-card"><div class="drama-result-info"><div class="drama-result-item"><span class="label">剧本名称：</span><span class="value">${mockNames[i%mockNames.length]}</span></div><div class="drama-result-item"><span class="label">剧本ID：</span><span class="value">L${String(i+1).padStart(4,'0')}</span></div><div class="drama-result-item"><span class="label">短剧名称：</span><span class="value">${name}</span></div><div class="drama-result-item"><span class="label">语言：</span><span class="value">中文</span></div></div><div class="drama-result-actions"><button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button></div></div>`).join('');
+    const matched=[];
+    names.forEach(n=>{eligible(mockDramaLib).forEach(d=>{if(d.name===n)matched.push(d)})});
+    result.innerHTML=matched.length?matched.map(cardFor).join(''):empty;
   }else{
     if(!playbookRaw){alert('请输入剧本ID或剧本名');return}
     const playbooks=playbookRaw.split('\n').map(s=>s.trim()).filter(s=>s);
-    let cards='';
+    const matched=[];
     playbooks.forEach(pb=>{
-      if(lang){cards+=`<div class="drama-result-card"><div class="drama-result-info"><div class="drama-result-item"><span class="label">剧本名称：</span><span class="value">繁花</span></div><div class="drama-result-item"><span class="label">剧本ID：</span><span class="value">${pb}</span></div><div class="drama-result-item"><span class="label">短剧名称：</span><span class="value">${nameMap[lang]}</span></div><div class="drama-result-item"><span class="label">语言：</span><span class="value">${langMap[lang]}</span></div></div><div class="drama-result-actions"><button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button></div></div>`}
-      else{Object.keys(langMap).forEach(l=>{cards+=`<div class="drama-result-card"><div class="drama-result-info"><div class="drama-result-item"><span class="label">剧本名称：</span><span class="value">繁花</span></div><div class="drama-result-item"><span class="label">剧本ID：</span><span class="value">${pb}</span></div><div class="drama-result-item"><span class="label">短剧名称：</span><span class="value">${nameMap[l]}</span></div><div class="drama-result-item"><span class="label">语言：</span><span class="value">${langMap[l]}</span></div></div><div class="drama-result-actions"><button class="drama-add-btn" onclick="addDrama(this)">+ 添加到投放</button></div></div>`})}
+      eligible(mockDramaLib).forEach(d=>{
+        if((d.playbookId===pb||d.playbookName===pb)&&(!lang||d.lang===langMap[lang]))matched.push(d);
+      });
     });
-    result.innerHTML=cards;
+    result.innerHTML=matched.length?matched.map(cardFor).join(''):empty;
   }
 }
 function addDrama(btn){
@@ -1381,6 +1418,8 @@ function addDrama(btn){
   const tagText=`${items[1].textContent}-${items[0].textContent}-${items[2].textContent}-${items[3].textContent}`;
   if(dramaTargetingMap.has(tagText)){alert('该短剧已添加');return}
   dramaTargetingMap.set(tagText,[]);
+  dramaStatusMap.set(tagText,card.dataset.status||'已上线');
+  dramaScheduleMap.set(tagText,'');
   renderAllDramaRows();
   btn.textContent='已添加';btn.disabled=true;
   resetMaterialPreview();
@@ -1399,10 +1438,16 @@ document.getElementById('selectedDramasList').addEventListener('click',function(
   const rm=e.target.closest('.drama-targeting-remove');
   if(rm){
     dramaTargetingMap.delete(rm.dataset.key);
+    dramaStatusMap.delete(rm.dataset.key);
+    dramaScheduleMap.delete(rm.dataset.key);
     renderAllDramaRows();
     resetMaterialPreview();
     return;
   }
+});
+document.getElementById('selectedDramasList').addEventListener('change',function(e){
+  const inp=e.target.closest('.drama-schedule-input');
+  if(inp)dramaScheduleMap.set(inp.dataset.key,inp.value);
 });
 
 // ==================== 表单交互 ====================
@@ -1616,11 +1661,12 @@ document.getElementById('autoTaskForm').addEventListener('submit',function(e){e.
   if(materialMode==='specify'){if(confirmedMaterials.length===0){alert('请至少选择 1 个素材');return}}
   else {if(!checkMaterialConditionRequired()){alert('选择自定义时，至少需要输入一个条件');return}}
   const taskName=document.getElementById('taskName').value,executeFrequency=document.getElementById('executeFrequency').value;
-  const dramas=Array.from(dramaTargetingMap.entries()).map(([key,pkgs])=>({key,targetingPackages:pkgs}));
+  const dramas=Array.from(dramaTargetingMap.entries()).map(([key,pkgs])=>({key,targetingPackages:pkgs,status:dramaStatusMap.get(key)||'已上线',scheduleTime:dramaScheduleMap.get(key)?dramaScheduleMap.get(key)+'+08:00':null}));
   const ev1=document.querySelectorAll('#endConditionGroup .condition-input')[0].value,ev2=document.querySelectorAll('#endConditionGroup .condition-input')[1].value;
   const accountPkg=document.getElementById('accountPackage').value,cl=document.getElementById('campaignLimit').value;
   if(!taskName){alert('请输入任务名称');return}if(!executeFrequency){alert('请输入执行频率');return}
   if(dramas.length===0){alert('请选择短剧');return}if(dramas.some(d=>d.targetingPackages.length===0)){alert('请为每个短剧分配至少一个定向包');return}if(!ev1||!ev2){alert('请填写结束运行条件的数值');return}
+  if(dramas.some(d=>d.status==='预上线'&&!d.scheduleTime)){alert('已选预上线短剧，请为该短剧填写排期时间');return}
   if(!accountPkg){alert('请选择投放账户');return}if(cl&&+cl<1){alert('计划创建上限不能小于1（不填=不限）');return}
   const accountCount=document.getElementById('accountCount').value;
   const pkgAccounts=getPackageAccounts();
