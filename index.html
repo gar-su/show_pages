@@ -752,6 +752,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
           <button type="button" class="btn-option" data-strategy="H5">H5</button>
         </div></div>
       </div>
+      <div class="form-item" id="apH5LinkItem" style="display:none">
+        <label><span class="required">*</span>选择H5</label>
+        <div class="form-control"><select class="condition-select" id="apH5Link" style="min-width:320px"><option value="">请选择H5</option></select></div>
+      </div>
       <div class="form-item">
         <label><span class="required">*</span>回传模板</label>
         <div class="form-control"><select class="condition-select" id="apCallbackTemplate" style="min-width:320px"><option value="">请选择回传模板</option></select></div>
@@ -1264,6 +1268,24 @@ function reloadApCallbackTemplate(){
   if(!plans.some(p=>p.id===sel.value))sel.value='';
 }
 reloadApCallbackTemplate();
+// ===== 选择H5 — 不同的H5（落地页）由监测链接接口返回 =====
+const mockMonitorLinks=[
+  {id:'2080641053732810754',name:'H5-东南亚短剧-标准',strategy:4,businessType:1},
+  {id:'2088834631521864301',name:'H5-欧美短剧-订阅',strategy:4,businessType:1},
+  {id:'2088834631521864302',name:'H5-付费充值-解锁页',strategy:4,businessType:2},
+  {id:'2080641053732810755',name:'W2A-落地链接-默认',strategy:1,businessType:1},
+];
+function reloadApH5Link(){
+  const item=document.getElementById('apH5LinkItem'),sel=document.getElementById('apH5Link');
+  const isH5=document.querySelector('#apStrategy .btn-option.active').dataset.strategy==='H5';
+  item.style.display=isH5?'flex':'none';
+  if(!isH5){sel.value='';return}
+  const bizType=document.querySelector('#apBizType .btn-option.active').dataset.type==='付费'?2:1;
+  const links=mockMonitorLinks.filter(l=>l.strategy===4&&l.businessType===bizType);
+  sel.innerHTML='<option value="">请选择H5</option>'+links.map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+  if(!links.some(l=>l.id===sel.value))sel.value='';
+}
+reloadApH5Link();
 
 function openAccountPackageDrawer(){
   document.getElementById('accountPackageDrawer').style.display='flex';
@@ -1271,6 +1293,7 @@ function openAccountPackageDrawer(){
   document.querySelectorAll('.ap-app-field').forEach(el=>el.style.display=isDeli?'flex':'none');
   document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isDeli?'none':'flex');
   reloadApCallbackTemplate();
+  reloadApH5Link();
   apSelectedAccounts=[];apCurrentPage=1;apFilteredData=mockAllAccounts;
   document.getElementById('apAccountSearch').value='';
   updateAccountPage();
@@ -1318,12 +1341,13 @@ function submitAccountPackage(){
   if(!name){alert('请输入账号包名称');return}
   if(!apSelectedAccounts.length){alert('请选择账户');return}
   if(!document.getElementById('apCallbackTemplate').value){alert('请选择回传模板');return}
+  if(document.querySelector('#apStrategy .btn-option.active').dataset.strategy==='H5'&&!document.getElementById('apH5Link').value){alert('请选择H5');return}
   alert('账户包创建成功！');
   closeAccountPackageDrawer();
 }
 document.getElementById('apName').addEventListener('input',function(){document.getElementById('apNameCount').textContent=this.value.length+' / 50'});
-document.querySelectorAll('#apBizType .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apBizType .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');reloadApCallbackTemplate()}));
-document.querySelectorAll('#apStrategy .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apStrategy .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');const isDeli=this.dataset.strategy==='直投';document.querySelectorAll('.ap-app-field').forEach(el=>el.style.display=isDeli?'flex':'none');document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isDeli?'none':'flex');reloadApCallbackTemplate()}));
+document.querySelectorAll('#apBizType .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apBizType .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');reloadApCallbackTemplate();reloadApH5Link()}));
+document.querySelectorAll('#apStrategy .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apStrategy .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active');const isDeli=this.dataset.strategy==='直投';document.querySelectorAll('.ap-app-field').forEach(el=>el.style.display=isDeli?'flex':'none');document.querySelectorAll('.ap-w2a-field').forEach(el=>el.style.display=isDeli?'none':'flex');reloadApCallbackTemplate();reloadApH5Link()}));
 document.getElementById('apCta').addEventListener('input',function(){document.getElementById('apCtaCount').textContent=this.value.length+' / 26'});
 document.querySelectorAll('#apDelayedDeepLink .btn-option').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('#apDelayedDeepLink .btn-option').forEach(x=>x.classList.remove('active'));this.classList.add('active')}));
 
